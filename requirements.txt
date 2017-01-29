@@ -1,0 +1,15 @@
+click==6.7
+Flask==0.12
+future==0.16.0
+gunicorn==19.6.0
+itsdangerous==0.24
+Jinja2==2.9.4
+line-bot-sdk==1.1.0
+MarkupSafe==0.23
+numpy==1.11.1
+protobuf==3.0.0a3
+pymongo==3.4.0
+requests==2.12.5
+slackweb==1.0.5
+suds==0.4
+Werkzeug==0.11.15
