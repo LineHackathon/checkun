@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import os
 import json
 from flask import Flask, request, abort
 from linebot import (LineBotApi, WebhookHandler)
