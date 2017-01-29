@@ -1,0 +1,29 @@
+{
+  "name": "checkun",
+  "scripts": {
+  },
+  "env": {
+    "BASE_URL": {
+      "required": true
+    },
+    "LINE_CHANNEL_ACCESS_TOKEN": {
+      "required": true
+    },
+    "LINE_CHANNEL_SECRET": {
+      "required": true
+    },
+    "MONGODB_URI": {
+      "required": true
+    }
+  },
+  "formation": {
+  },
+  "addons": [
+    "mongolab"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
