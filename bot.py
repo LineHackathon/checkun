@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 from linebot import (LineBotApi, WebhookHandler)
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
 
 import warikan
+import datastorage
+import aws
+
 
 # import sqlite3
 uname_dict = {}
@@ -20,6 +23,131 @@ handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
 base_url = os.environ['BASE_URL']
 
 #print(base_url)
+
+@app.route('/')
+def get_all():
+    print('/')
+    users = datastorage.get_users()
+    print(users)
+    groups = datastorage.get_groups()
+    print(groups)
+
+    data_list = {'users': users, 'groups': groups}
+    print(data_list)
+
+    return jsonify(data_list)
+
+@app.route('/users')
+def get_users():
+    print('/users')
+    users = datastorage.get_users()
+    print(users)
+
+    return jsonify(users)
+
+@app.route('/user/<uid>')
+def get_user(uid):
+    print('/user/%s' % uid)
+    groups_of_user = datastorage.get_groups_of_user(uid)
+    print(groups_of_user)
+
+    return jsonify(groups_of_user)
+
+@app.route('/adduser/<uid>')
+def add_user(uid):
+    print('/add_user/%s' % uid)
+    datastorage.register_user(uid)
+
+    users = datastorage.get_users()
+    print(users)
+
+    return jsonify(users)
+
+@app.route('/deluser/<uid>')
+def delete_user(uid):
+    print('/del_user/%s' % uid)
+    datastorage.delete_user(uid)
+
+    users = datastorage.get_users()
+    print(users)
+
+    return jsonify(users)
+
+@app.route('/delallusers')
+def delete_all_users():
+    print('/delalluser')
+    datastorage.delete_all_users()
+
+    users = datastorage.get_users()
+    print(users)
+
+    return jsonify(users)
+
+@app.route('/groups')
+def get_groups():
+    print('/groups')
+    groups = datastorage.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/group/<gid>')
+def get_group(gid):
+    print('/group/%s' % gid)
+    users_in_group = datastorage.get_users_in_group(gid)
+    print(users_in_group)
+
+    return jsonify(users_in_group)
+
+@app.route('/addgroup/<gid>')
+def add_group(gid):
+    print('/addgroup/%s' % gid)
+    datastorage.create_group(gid)
+
+    groups = datastorage.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/delgroup/<gid>')
+def delete_group(gid):
+    print('/delgroup/%s' % gid)
+    datastorage.delete_group(gid)
+
+    groups = datastorage.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/delallgroups')
+def delete_all_groups():
+    print('/delallgroups')
+    datastorage.delete_all_groups()
+
+    groups = datastorage.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/invite/<uid>/to/<gid>')
+def invate_user_to_group(uid, gid):
+    datastorage.invite_user_to_group(uid, gid)
+
+    users_in_group = datastorage.get_users_in_group(gid)
+    print(users_in_group)
+
+    return jsonify(users_in_group)
+
+@app.route('/upload/<gid>/<uid>')
+def upload_receipt(gid, uid):
+    aws.set_receipt(gid, uid, 'checkun.png')
+    return 'ok'
+
+@app.route('/download/<gid>/<uid>')
+def download_receipt(gid, uid):
+    aws.get_receipt(gid, uid, 'checkun.png')
+    return 'ok'
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -118,6 +246,47 @@ def get_template_msg():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
+    # print(event)
+    if(event.source.type == 'user'):
+        uid = event.source.user_id
+        name = get_name(uid)
+
+        print(warikan.group_id)
+        print(event.message.text)
+
+        test_group_id = 1001
+        test_user_id = 2001
+
+        #mongodb test
+        if (event.message.text == 'add_user'):
+            user_id = test_user_id
+            datastorage.register_user(user_id)
+            test_user_id = user_id + 1
+            
+        elif(event.message.text == 'delete_user'):
+            #test_user_id -= 1
+            datastorage.delete_user(test_group_id)
+            
+
+        elif(event.message.text == 'add_group'):
+            datastorage.create_group(test_group_id)
+            test_group_id += 1
+
+        elif(event.message.text == 'delete_group_user'):
+            datastorage.delete_group_user(test_group_id-1, test_user_id-1)
+            
+        elif(event.message.text == 'delete_group'):
+            test_group_id -= 1
+            datastorage.delete_group(test_group_id)
+
+        elif(event.message.text == 'invite_user'):
+            datastorage.invite_user_to_group(test_group_id-1, test_user_id-1)
+
+        else:
+            pass
+
+
+def handle_text_message_org(event):
     # print(event)
     if(event.source.type == 'user'):
         uid = event.source.user_id
