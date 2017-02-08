@@ -12,7 +12,7 @@ print(MONGO_URL)
 if MONGO_URL:
 	client = MongoClient(MONGO_URL)
     # Get the database
-	db = client['checkun_db']
+	db = client['heroku_8x45fp5g']
 else:
 	client = MongoClient('mongodb://localhost:27017/')
 	db = client['test_db']
