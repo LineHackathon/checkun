@@ -8,6 +8,7 @@ from pymongo import MongoClient
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 print(MONGO_URL)
+#app.logger.info(MONGO_URL)
 
 if MONGO_URL:
 	client = MongoClient(MONGO_URL)
@@ -27,6 +28,7 @@ col_hist_groups = db['hist_groups']
 # users = [
 #     {
 #         id: user_id,
+#         info: {name: xxx, flow: True, pict: null}
 #         groups: [{id:group_id_1, state:flg}, {id:group_id_2, state:flg}, ...]
 #     },
 #     {
@@ -54,11 +56,11 @@ col_hist_groups = db['hist_groups']
 ####################################################
 
 #uinfo:{groups:[{}]}
-def register_user(uid):
+def register_user(uid, info={}):
 	if uid:
 		user = {}
 		user['id'] = uid
-		user['info'] = {}
+		user['info'] = info
 		user['groups'] = []
 		col_users.insert_one(user)
 
@@ -79,6 +81,15 @@ def get_users():
 		users.append(user['id'])
 
 	return users
+
+def update_user_follow(uid, follow):
+	if uid:
+		user = col_users.find_one({'id':uid})
+		if user:
+			info = user['info']
+			info['follow'] = follow
+			col_users.update({'id': uid}, {'$set': {'info': info}})
+
 
 #所属グループ一覧を取得
 #all:falseの場合、active(清算中)グループのみ

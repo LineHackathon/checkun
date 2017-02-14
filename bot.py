@@ -6,10 +6,12 @@ from flask import Flask, request, abort, jsonify
 from linebot import (LineBotApi, WebhookHandler)
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
+from tinydb import TinyDB
 
 import warikan
 import datastorage
-import aws
+import aws3
+import vision
 
 
 # import sqlite3
@@ -17,6 +19,13 @@ uname_dict = {}
 uid_dict = {}
 
 app = Flask(__name__)
+
+print('get db start')
+#test_db = TinyDB('db/test.json')
+test_db_file = aws3.get_db('test1')
+print(test_db_file)
+test_db = TinyDB(test_db_file)
+print('get db end')
 
 line_bot_api = LineBotApi(os.environ['LINE_CHANNEL_ACCESS_TOKEN'])
 handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
@@ -140,12 +149,12 @@ def invate_user_to_group(uid, gid):
 
 @app.route('/upload/<gid>/<uid>')
 def upload_receipt(gid, uid):
-    aws.set_receipt(gid, uid, 'checkun.png')
+    aws3.set_receipt(gid, uid, 'checkun.png')
     return 'ok'
 
 @app.route('/download/<gid>/<uid>')
 def download_receipt(gid, uid):
-    aws.get_receipt(gid, uid, 'checkun.png')
+    aws3.get_receipt(gid, uid, 'checkun.png')
     return 'ok'
 
 
@@ -396,20 +405,11 @@ def handle_image_message(event):
     # print(event)
     if(event.source.type == 'user'):
         save_content(event.message.id, 'static/' + event.message.id + '.jpg')
+        receipt_text = vision.recognize_receipt('static/' + event.message.id + '.jpg')
+        total_amount = vision.extract_amount(receipt_text)
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=u'ありがとう\n画像をみんなにシェアするね'))
-        # print('groupid:' + group_id_temp)
-        line_bot_api.push_message(
-            warikan.group_id,
-            TextSendMessage(text=get_name(event.source.user_id) + u'が画像をシェアしてくれたよ'))
-        line_bot_api.push_message(
-            warikan.group_id,
-            ImageSendMessage(
-                original_content_url=base_url + '/static/' + event.message.id + '.jpg',
-                preview_image_url=base_url + '/static/' + event.message.id + '.jpg'
-            )
-        )
+            TextSendMessage(text=total_amount))
 
 def make_paypal_img_msg(url):
     imagemap_message = ImagemapSendMessage(
