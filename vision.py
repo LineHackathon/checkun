@@ -82,7 +82,7 @@ def recognize_receipt(str_image_path):
 
         result_dict = json.loads(obj_response.text)
         receipt_text = result_dict['responses'][0]['textAnnotations'][0]['description']
-        print(receipt_text)
+        #print(receipt_text)
         #unicode->str(utf-8)
         return receipt_text.encode('utf-8')
     else:
