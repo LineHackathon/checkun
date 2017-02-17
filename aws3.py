@@ -45,10 +45,37 @@ def update_db(name):
 	data = open(file_path, 'rb')
 	bucket.put_object(Key=key, Body=data)
 
+def set_user_pict(uid, pict_name):
+	file_path = 'static' + '/' + pict_name
+	key = 'users' + '/' + uid + '_' + pict_name
+	set_file(key, file_path)
+
+def get_user_pict(uid, pict_name):
+	file_path = 'static' + '/' + pict_name
+	key = 'users' + '/' + uid + '_' + pict_name
+	get_file(key, file_path)
+
 #set /static/file_name to S3
 #key=gid/file_name
 #file_name:receipt_uid_date_time.jpg
 def set_receipt(gid, uid, file_name):
+	file_path = 'static' + '/' + file_name
+	key = 'groups' + gid + '/' + uid + '_' + file_name
+	set_file(key, file_path)
+
+#get file and save to /static/file_name
+def get_receipt(gid, uid, file_name):
+	file_path = 'static' + '/' + file_name
+	key = 'groups' + gid + '/' + uid + '_' + file_name
+	get_file(key, file_path)
+
+def delete_receipt(gid, uid, file_name):
+	file_path = 'static' + '/' + file_name
+	key = 'groups' + gid + '/' + uid + '_' + file_name
+	delete_file(key, file_path)
+
+
+def set_file(key, file_path):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
@@ -57,14 +84,11 @@ def set_receipt(gid, uid, file_name):
 	for obj_summary in bucket.objects.all():
 		print(obj_summary)
 	# Upload a new file
-	file_path = 'static' + '/' + file_name
-	key = gid + '/' + uid + '_' + file_name
 	data = open(file_path, 'rb')
 	bucket.put_object(Key=key, Body=data)
 	
 
-#get file and save to /static/file_name
-def get_receipt(gid, uid, file_name):
+def get_file(key, file_path):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
@@ -73,8 +97,6 @@ def get_receipt(gid, uid, file_name):
 	for obj_summary in bucket.objects.all():
 		print(obj_summary)
 
-	file_path = 'static' + '/' + file_name
-	key = gid + '/' + uid + '_' + file_name
 	obj = bucket.Object(key)
 	res = obj.get()
 	body = res['Body'].read()
@@ -84,7 +106,7 @@ def get_receipt(gid, uid, file_name):
 		fd.write(body)
 		fd.close()
 
-def delete_receipt(gid, uid, file_name):
+def delete_file(gid, uid, file_name):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
@@ -93,8 +115,6 @@ def delete_receipt(gid, uid, file_name):
 	for obj_summary in bucket.objects.all():
 		print(obj_summary)
 
-	file_path = 'static' + '/' + file_name
-	key = gid + '/' + uid + '_' + file_name
 	obj = bucket.Object(key)
 	obj.delete()
 
