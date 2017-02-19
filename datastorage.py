@@ -10,7 +10,7 @@ import vision
 #payments table
 #debt table?
 
-print('get db start')
+#print('get db start')
 #test_db = TinyDB('db/test.json')
 #test_db_file = aws3.get_db('test1')
 #print(test_db_file)
@@ -19,9 +19,9 @@ print('get db start')
 #db_file = aws3.get_db('checkun')
 #test
 db_file = 'db/checkun.json'
-print(db_file)
+#print(db_file)
 db = TinyDB(db_file)
-print('get db end')
+#print('get db end')
 
 user_table = db.table('users')
 group_table = db.table('groups')
