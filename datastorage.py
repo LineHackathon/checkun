@@ -21,7 +21,7 @@ db_file = aws3.get_db(aws3_db_name)
 #test
 #db_file = 'db/checkun.json'
 #print(db_file)
-#db = TinyDB(db_file, indent=2, sort_keys=True, separators=(',', ': '))
+db = TinyDB(db_file, indent=2, sort_keys=True, separators=(',', ': '))
 #print('get db end')
 
 user_table = db.table('users')
