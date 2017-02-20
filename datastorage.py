@@ -21,7 +21,7 @@ db_file = aws3.get_db(aws3_db_name)
 #test
 #db_file = 'db/checkun.json'
 #print(db_file)
-db = TinyDB(db_file)
+#db = TinyDB(db_file, indent=2, sort_keys=True, separators=(',', ': '))
 #print('get db end')
 
 user_table = db.table('users')
@@ -87,7 +87,7 @@ def add_group(gid,gtype,name=None):
     else:
         if name is None:
             #todo:
-            name = 'xxx'
+            name = gid
 
         users = []
         accountant = False
@@ -130,23 +130,15 @@ def get_group_info(gid):
 
     group = group_table.search(Query().gid == gid)
 
-    print(group)
-    print(len(group))
-
-    #if group is not None:
-    if len(group) == 1:
-        print(group[0])
-        group_info['gid'] = group[0]['gid']
-        group_info['type'] = group[0]['type']
-        group_info['name'] = group[0]['name']
-        group_info['accountant'] = group[0]['accountant']
-        group_info['round_value'] = group[0]['round_value']
-
-    return group_info
+    if group:
+        # print(group[0])
+        return group[0]
+    return None
 
 def delete_group(gid):
     ''' グループ削除 '''
     group_table.remove(Query().gid == gid)
+    payment_table.remove(Query().gid == gid)
 
     update_db()
 
@@ -256,10 +248,13 @@ def delete_settlement_user_from_group(gid, uid):
 
         update_db()
 
+def get_groups_payments(gid):
+    return payment_table.search(Query().gid == gid)
+
 #usersではなくsettlement_usersから?userが所属するすべてのgroupの支払い一覧を返す?
 def get_user_groups_payments(uid):
     ''' table(group)のusersにuidが含まれるグループのpaymentsをリストで渡す '''
-    peyments = []
+    payments = payment_table.search(Query().gid == gid)
     return payments
 
 #paymentsで管理?
@@ -290,7 +285,7 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
         id, payment_date, modification_date は生成する
         imageの指定があれば、s3にアップ'''
 
-    p_id = payment_table.count() + 1
+    p_id = len(payment_table) + 1
     #todo
     payment_date = '2017/02/28'
     modification_date = payment_date
@@ -307,6 +302,7 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
     #save receipt to user folder in S3
     if receipt is not None:
         aws3.set_receipt(uid, receipt)
+        # pass
 
     update_db()
 
@@ -346,7 +342,7 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
 #指定groupの全ユーザーのpaymentリスト
 def get_group_payment_payments(gid):
     ''' table(payments) からuserのamountりすとを渡す '''
-    return payment_table.search(Query().pid == gid)
+    return payment_table.search(Query().gid == gid)
 
 #指定group、指定ユーザーのpaymentリスト
 def get_group_user_payments(gid, payment_uid):
