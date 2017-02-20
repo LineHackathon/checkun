@@ -16,7 +16,8 @@ import vision
 #print(test_db_file)
 #test_db = TinyDB(test_db_file)
 
-db_file = aws3.get_db('checkun')
+aws3_db_name = 'checkun'
+db_file = aws3.get_db(aws3_db_name)
 #test
 #db_file = 'db/checkun.json'
 #print(db_file)
@@ -29,7 +30,7 @@ payment_table = db.table('payments')
 debt_table = db.table('debt')
 
 def update_db():
-    aws3.update_db(checkun)
+    aws3.update_db(aws3_db_name)
 
 
 ###################
@@ -94,12 +95,12 @@ def add_group(gid,gtype,name=None):
         round_value = 100
 
         group_table.insert({
-                            'gid':gid, 
-                            'type':gtype, 
-                            'name':name, 
-                            'users':users, 
-                            'accountant':accountant, 
-                            'settlement_users':settlement_users, 
+                            'gid':gid,
+                            'type':gtype,
+                            'name':name,
+                            'users':users,
+                            'accountant':accountant,
+                            'settlement_users':settlement_users,
                             'round_value':round_value})
 
     update_db()
@@ -293,11 +294,11 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
     #todo
     payment_date = '2017/02/28'
     modification_date = payment_date
-    payment_table.insert({  'gid':gid, 
-                            'payment_uid':payment_uid, 
-                            'p_id':p_id, 
-                            'amount':amount, 
-                            'description':description, 
+    payment_table.insert({  'gid':gid,
+                            'payment_uid':payment_uid,
+                            'p_id':p_id,
+                            'amount':amount,
+                            'description':description,
                             'receipt':receipt,
                             'payment_date':payment_date,
                             'modification_date':modification_date
@@ -320,7 +321,7 @@ def delete_payment(payment_id):
 
 def update_payment(payment_id, amount=None, description=None, receipt=None):
     ''' table(payments) の amount, description, image を上書きする
-        modification_date更新 
+        modification_date更新
         imageの指定があれば、s3にアップ'''
     payment = {}
 
@@ -341,7 +342,7 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
     payment_table.insert(payment, Query().payment_id == payment_id)
 
     update_db()
-        
+
 #指定groupの全ユーザーのpaymentリスト
 def get_group_payment_payments(gid):
     ''' table(payments) からuserのamountりすとを渡す '''
