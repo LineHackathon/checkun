@@ -52,9 +52,11 @@ except:
 
     except:
         traceback.print_exc()
-        print(u'読み込みエラー')
+        #print(u'読み込みエラー')
+        print('read ok')
         sys.exit(-1)
-print(u'読み込み成功')
+#print(u'読み込み成功')
+print('read ok')
 
 # setup LINE Messaging API
 line_bot_api = LineBotApi(line_messaging_api_token)
