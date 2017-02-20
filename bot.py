@@ -217,6 +217,7 @@ def get_name(uid):
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
     if event.source.type == 'user':
+        get_name(event.source.user_id)
         #print get_name(event.source.user_id)
 
     id = get_id(event.source)
