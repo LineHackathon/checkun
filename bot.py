@@ -217,7 +217,7 @@ def get_name(uid):
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
     if event.source.type == 'user':
-        print get_name(event.source.user_id)
+        #print get_name(event.source.user_id)
 
     id = get_id(event.source)
     reply_msgs = []
@@ -888,9 +888,9 @@ def handle_text_message(event):
                     transfer_text += u'{}さんは{}さんに{}円支払ってください\n'.format(get_name(transfer["from"]), get_name(transfer["to"]), transfer["amount"])
                     pay_text = u'{}さんに{}円支払ってください\n'.format(get_name(transfer["to"]), transfer["amount"])
                     rec_text = u'{}さんから{}円受け取ってください\n'.format(get_name(transfer["from"]), transfer["amount"])
-                    print pay_text
-                    print rec_text
-                    print transfer["from"]
+                    #print pay_text
+                    #print rec_text
+                    #print transfer["from"]
                     if transfer["from"] == uid:
                         text += pay_text
                     else:
