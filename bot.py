@@ -351,7 +351,7 @@ def handle_text_message(event):
                 for uid in users:
                     text += (get_name(uid)) + u'さん\n'
 
-            if len(text):
+            if text is not None and len(text):
                 text = text[:-1]
                 reply_msgs.append(TextSendMessage(text = text))
 
