@@ -16,9 +16,9 @@ import vision
 #print(test_db_file)
 #test_db = TinyDB(test_db_file)
 
-#db_file = aws3.get_db('checkun')
+db_file = aws3.get_db('checkun')
 #test
-db_file = 'db/checkun.json'
+#db_file = 'db/checkun.json'
 #print(db_file)
 db = TinyDB(db_file)
 #print('get db end')
@@ -29,8 +29,7 @@ payment_table = db.table('payments')
 debt_table = db.table('debt')
 
 def update_db():
-    #aws3.update_db(checkun)
-    pass
+    aws3.update_db(checkun)
 
 
 ###################
@@ -45,8 +44,7 @@ def add_user(uid, name, pict, status, follow):
 
     #save pict to user folder in S3
     if pict is not None:
-        #aws3.set_user_pict(uid, pict)
-        pass
+        aws3.set_user_pict(uid, pict)
 
     update_db()
 
@@ -307,8 +305,7 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
 
     #save receipt to user folder in S3
     if receipt is not None:
-        #aws3.set_receipt(uid, receipt)
-        pass
+        aws3.set_receipt(uid, receipt)
 
     update_db()
 
@@ -336,7 +333,7 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
     if receipt is not None:
         payment['receipt'] = receipt
         #save receipt to user folder in S3
-        #aws3.set_receipt(uid, receipt)
+        aws3.set_receipt(uid, receipt)
 
     #todo
     modification_date = '2017/02/28'
