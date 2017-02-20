@@ -1591,6 +1591,8 @@ def handle_image_message(event):
     if status in ['add_photo', 'modify_photo']:
         udb[id]['image_url'] = base_url + '/static/' + event.message.id + '.jpg'
         save_content(event.message.id, 'static/' + event.message.id + '.jpg')
+        receipt_amount = get_receipt_amount('static/' + event.message.id + '.jpg')
+        print(receipt_amount)
 
         reply_msgs.append(TemplateSendMessage(
             alt_text='登録確認',
@@ -1598,7 +1600,7 @@ def handle_image_message(event):
                 thumbnail_image_url=udb[id].get('image_url', None),
                 # title=u'登録確認',
                 #text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = get_commad_number_str(udb[id]['amount'])),
-                text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = get_receipt_amount('static/' + event.message.id + '.jpg')),
+                text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = receipt_amount),
                 actions=[
                     MessageTemplateAction(
                     # PostbackTemplateAction(
