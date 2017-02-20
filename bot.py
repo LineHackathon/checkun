@@ -350,6 +350,8 @@ def handle_text_message(event):
                 text = u'現在この精算グループには{}人の方が対象になっています\n'.format(len(users))
                 for uid in users:
                     text += (get_name(uid)) + u'さん\n'
+            else:
+                text = u'あなたは精算グループに加入していません\n'
 
             if text is not None and len(text):
                 text = text[:-1]
