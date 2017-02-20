@@ -15,7 +15,7 @@ def get_db(name):
 	key = file_path
 
 	for obj in bucket.objects.all():
-		print('key:' + obj.key)
+		#print('key:' + obj.key)
 		if obj.key.startswith(key):
 			#print('hit')
 			res = obj.get()
@@ -79,10 +79,10 @@ def set_file(key, file_path):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
-	print(bucket.name)
-	print(bucket.objects.all())
-	for obj_summary in bucket.objects.all():
-		print(obj_summary)
+	#print(bucket.name)
+	#print(bucket.objects.all())
+	#for obj_summary in bucket.objects.all():
+	#	print(obj_summary)
 	# Upload a new file
 	data = open(file_path, 'rb')
 	bucket.put_object(Key=key, Body=data)
@@ -92,10 +92,10 @@ def get_file(key, file_path):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
-	print(bucket.name)
-	print(bucket.objects.all())
-	for obj_summary in bucket.objects.all():
-		print(obj_summary)
+	#print(bucket.name)
+	#print(bucket.objects.all())
+	#for obj_summary in bucket.objects.all():
+	#	print(obj_summary)
 
 	obj = bucket.Object(key)
 	res = obj.get()
@@ -110,10 +110,10 @@ def delete_file(gid, uid, file_name):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
-	print(bucket.name)
-	print(bucket.objects.all())
-	for obj_summary in bucket.objects.all():
-		print(obj_summary)
+	#print(bucket.name)
+	#print(bucket.objects.all())
+	#for obj_summary in bucket.objects.all():
+	#	print(obj_summary)
 
 	obj = bucket.Object(key)
 	obj.delete()
