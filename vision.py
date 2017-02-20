@@ -123,6 +123,14 @@ def recognize_receipt(str_image_path):
         return receipt_text.encode('utf-8')
     else:
         return "error"
+
+def get_receipt_amount(str_image_path):
+    eceipt_text = recognize_receipt('static/S__25034777.jpg')
+    amount = extract_amount(receipt_text)
+    if amount is None:
+        amount = 0
+    
+    return amount
  
 if __name__ == '__main__':
 	#extract_amount(test_text)

@@ -1597,7 +1597,8 @@ def handle_image_message(event):
             template=ButtonsTemplate(
                 thumbnail_image_url=udb[id].get('image_url', None),
                 # title=u'登録確認',
-                text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = get_commad_number_str(udb[id]['amount'])),
+                #text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = get_commad_number_str(udb[id]['amount'])),
+                text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[id]['use'], amount = get_receipt_amount('static/' + event.message.id + '.jpg')),
                 actions=[
                     MessageTemplateAction(
                     # PostbackTemplateAction(
