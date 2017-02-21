@@ -88,7 +88,7 @@ def line_login_get_access_token(code):
         headers = headers,
         params = payload
     )
-    app.logger.info('Auth token: ' + str(r.json()))
+    #app.logger.info('Auth token: ' + str(r.json()))
     # print payload
     # print r.json()
     # print r.url
@@ -102,7 +102,7 @@ def line_login_get_user_profiles(token):
         'https://api.line.me/v2/profile',
         headers = headers,
     )
-    app.logger.info('Auth prof: ' + str(r.json()))
+    #app.logger.info('Auth prof: ' + str(r.json()))
     # print payload
     # print r.json()
     # print r.url
@@ -132,7 +132,7 @@ def auth_callback():
     code = request.args.get('code')
     state = request.args.get('state')
 
-    app.logger.info('Auth args: ' + str(request.args))
+    #app.logger.info('Auth args: ' + str(request.args))
 
     # 認証エラー
     if(code is None):
@@ -167,7 +167,7 @@ def callback():
 
     # get request body as text
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    #app.logger.info("Request body: " + body)
 
     f = open('log.txt','a')
     f.write(json.dumps(json.loads(body), indent=2, sort_keys=True, separators=(',', ': ')))
@@ -180,7 +180,7 @@ def callback():
     if(len(body_dict.get('events')) == 2):
         if(body_dict["events"][0].get('replyToken') == "00000000000000000000000000000000"):
             if(body_dict["events"][1].get('replyToken') == "ffffffffffffffffffffffffffffffff"):
-                app.logger.info("VERIFY code received")
+                #app.logger.info("VERIFY code received")
                 return 'OK'
 
     # handle webhook body
@@ -221,6 +221,7 @@ def handle_text_message(event):
         #print get_name(event.source.user_id)
 
     id = get_id(event.source)
+    print(id)
     reply_msgs = []
     #コマンド受信
     if(event.message.text[0] == cmd_prefix):
