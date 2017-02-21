@@ -6,7 +6,7 @@ import boto3
 AWS_S3_BUCKET_NAME = 'checkunreceipt'
 
 def get_db(name):
-	#print('get_db')
+	print('get_db')
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
@@ -15,9 +15,9 @@ def get_db(name):
 	key = file_path
 
 	for obj in bucket.objects.all():
-		#print('key:' + obj.key)
+		print('key:' + obj.key)
 		if obj.key.startswith(key):
-			#print('hit')
+			print('hit')
 			res = obj.get()
 			body = res['Body'].read()
 			with open(file_path, 'wb') as fd:
@@ -36,12 +36,14 @@ def get_db(name):
 	return file_path
 
 def update_db(name):
+	print('update_db')
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
 
 	file_path = 'db' + '/' + name + '.json'
 	key = file_path
+	print('key:' + key)
 	data = open(file_path, 'rb')
 	bucket.put_object(Key=key, Body=data)
 

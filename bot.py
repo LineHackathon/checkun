@@ -1593,7 +1593,7 @@ def handle_image_message(event):
     if status in ['add_photo', 'modify_photo']:
         udb[id]['image_url'] = base_url + '/static/' + event.message.id + '.jpg'
         save_content(event.message.id, 'static/' + event.message.id + '.jpg')
-        receipt_amount = get_receipt_amount('static/' + event.message.id + '.jpg')
+        receipt_amount = vision.get_receipt_amount('static/' + event.message.id + '.jpg')
         print(receipt_amount)
 
         reply_msgs.append(TemplateSendMessage(
