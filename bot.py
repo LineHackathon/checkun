@@ -1262,6 +1262,8 @@ http://www.checkun.com/'''))
 
     else:
         try:
+            print(id)
+            print(udb[id])
             status = udb[id]['status']
         except:
             status = 'none'
@@ -1373,6 +1375,7 @@ http://www.checkun.com/'''))
                 reply_msgs.append(TextSendMessage(text = u'登録完了しました！この内容でみんなに報告しますね！'))
                 # ここでDB登録＆みんなに報告
                 groups = db.get_user_groups(id)
+                print(groups)
                 for gid in groups:
                     db.add_payment(gid, id, udb[id]["amount"], udb[id].get("use"), udb[id].get("image"))
 
