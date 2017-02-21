@@ -301,7 +301,7 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
 
     #save receipt to user folder in S3
     if receipt is not None:
-        aws3.set_receipt(uid, receipt)
+        aws3.set_receipt(gid, payment_uid, receipt)
         # pass
 
     update_db()

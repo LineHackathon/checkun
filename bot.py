@@ -8,7 +8,7 @@ import os
 import sys
 import traceback
 
-from flask import Flask, request, abort, send_from_directory
+from flask import Flask, request, abort, send_from_directory, jsonify
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import *
@@ -16,8 +16,163 @@ from linebot.models import *
 # import database_mock as db
 import datastorage as db
 import warikan
+import vision
 
 app = Flask(__name__)
+
+@app.route('/')
+def get_all():
+    print('/')
+    users = db.get_users()
+    print(users)
+    groups = db.get_groups()
+    print(groups)
+    payments = db.get_payments()
+    print(payments)
+
+    data_list = {'users': users, 'groups': groups, 'payments':payments}
+    print(data_list)
+
+    return jsonify(data_list)
+
+@app.route('/users')
+def get_users():
+    print('/users')
+    users = db.get_users()
+    print(users)
+
+    return jsonify(users)
+
+@app.route('/user/<uid>')
+def get_user(uid):
+    print('/user/%s' % uid)
+    #groups_of_user = db.get_groups_of_user(uid)
+    #print(groups_of_user)
+    user = db.get_user(uid)
+    print(user)
+
+    return jsonify(user)
+
+@app.route('/adduser/<uid>')
+def add_user(uid):
+    print('/add_user/%s' % uid)
+    #datastorage.register_user(uid)
+    db.add_user(uid, 'test_name', 'test_pict', 'test_status', True)
+
+    users = db.get_users()
+    print(users)
+    user = db.get_user(uid)
+    print(user)
+
+    return jsonify({'users':users, 'uid':user})
+
+@app.route('/deluser/<uid>')
+def delete_user(uid):
+    print('/del_user/%s' % uid)
+    db.delete_user(uid)
+
+    users = db.get_users()
+    print(users)
+    user = db.get_user(uid)
+    print(user)
+
+    return jsonify({'users':users, 'uid':user})
+
+@app.route('/delallusers')
+def delete_all_users():
+    print('/delalluser')
+    db.delete_all_users()
+
+    users = db.get_users()
+    print(users)
+    user = db.get_user(uid)
+    print(user)
+
+    return jsonify({'users':users, 'uid':user})
+
+@app.route('/groups')
+def get_groups():
+    print('/groups')
+    groups = db.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/group/<gid>')
+def get_group(gid):
+    print('/group/%s' % gid)
+    #users_in_group = db.get_users_in_group(gid)
+    #print(users_in_group)
+    group_info = db.get_group_info(gid)
+    print(group_info)
+
+    return jsonify(group_info)
+
+@app.route('/addgroup/<gid>')
+def add_group(gid):
+    print('/addgroup/%s' % gid)
+    #datastorage.create_group(gid)
+    db.add_group(gid, "group")
+
+    groups = db.get_groups()
+    print(groups)
+
+    group_info = db.get_group_info(gid)
+    print(group_info)
+
+    return jsonify({'groups':groups, 'gid':group_info})
+
+@app.route('/delgroup/<gid>')
+def delete_group(gid):
+    print('/delgroup/%s' % gid)
+    db.delete_group(gid)
+
+    groups = db.get_groups()
+    print(groups)
+
+    group_info = db.get_group_info(gid)
+    print(group_info)
+
+    return jsonify({'groups':groups, 'gid':group_info})
+
+@app.route('/delallgroups')
+def delete_all_groups():
+    print('/delallgroups')
+    db.delete_all_groups()
+
+    groups = db.get_groups()
+    print(groups)
+
+    return jsonify(groups)
+
+@app.route('/add/<uid>/to/<gid>')
+def add_user_to_group(uid, gid):
+    db.add_user_to_group(gid, uid)
+
+    group_users = db.get_group_users(gid)
+    print(group_users)
+
+    return jsonify(group_users)
+
+@app.route('/delete/<uid>/from/<gid>')
+def delete_user_from_group(uid, gid):
+    db.delete_user_from_group(gid, uid)
+
+    group_users = db.get_group_users(gid)
+    print(group_users)
+
+    return jsonify(group_users)
+
+@app.route('/upload/<gid>/<uid>')
+def upload_receipt(gid, uid):
+    aws.set_receipt(gid, uid, 'checkun.png')
+    return 'ok'
+
+@app.route('/download/<gid>/<uid>')
+def download_receipt(gid, uid):
+    aws.get_receipt(gid, uid, 'checkun.png')
+    return 'ok'
+
 
 # 環境変数が見つかればそっちを読む
 # 見つからなければjsonファイルを読む

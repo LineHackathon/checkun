@@ -21,6 +21,15 @@ def is_money_mark(mark):
 		return False
 
 def strip_amount(amount_text):
+    amount = ''
+    for c in amount_text:
+        #print(c)
+        if c.isdigit() or is_money_mark(c):
+            amount += c
+
+    return amount
+
+def strip_amount_test(amount_text):
 	amount = ''
 	#amount = amount.strip(' ')
 	#ok
@@ -33,8 +42,10 @@ def strip_amount(amount_text):
 			amount += c
 
 	print(amount)
-
 	#print('¥1,  2  4   56,, 7,8'.replace(' ', '').replace(',', ''))
+
+    #return amount
+    
 
 def get_amount(amount_text):
 	total_amount_start_index = 0
@@ -125,11 +136,12 @@ def recognize_receipt(str_image_path):
         return "error"
 
 def get_receipt_amount(str_image_path):
-    eceipt_text = recognize_receipt('static/S__25034777.jpg')
+    #receipt_text = recognize_receipt('static/S__25034777.jpg')
+    receipt_text = recognize_receipt(str_image_path)
     amount = extract_amount(receipt_text)
     if amount is None:
         amount = 0
-    
+
     return amount
  
 if __name__ == '__main__':
