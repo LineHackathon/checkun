@@ -173,6 +173,22 @@ def download_receipt(gid, uid):
     aws.get_receipt(gid, uid, 'checkun.png')
     return 'ok'
 
+@app.route('/status')
+def get_all_status():
+    print('/status')
+    all_status = db.get_all_status()
+    print(all_status)
+
+    return jsonify(all_status)
+
+@app.route('/status/<uid>')
+def get_status(uid):
+    print('/status/%s' % uid)
+    status_info = db.get_status_info(uid)
+    print(status_info)
+
+    return jsonify(status_info)
+
 
 # 環境変数が見つかればそっちを読む
 # 見つからなければjsonファイルを読む

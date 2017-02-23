@@ -48,6 +48,9 @@ def add_status_info(uid, status_info):
 def set_status_info(uid, status_info):
     update_status_info(uid, status_info)
 
+def get_all_status():
+    return status_table.all()
+
 def get_status_info(uid):
     print('get_status_info:' + uid)
     status_info = {}
@@ -67,7 +70,7 @@ def get_status_info_element_with_name(uid, info_ele_name):
     return info_element
 
 def update_status_info(uid, status_info):
-    print('update_status_info')
+    print('update_status_info:' + uid)
     user_status = status_table.search(Query().uid == uid)
     if is_user_status_exist(uid):
         status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
