@@ -71,9 +71,11 @@ def get_status_info_element_with_name(uid, info_ele_name):
 
 def update_status_info(uid, status_info):
     print('update_status_info:' + uid)
-    user_status = status_table.search(Query().uid == uid)
     if is_user_status_exist(uid):
+        print(uid + ' exist')
         status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
+    else:
+        status_table.insert({'uid':uid, 'status_info':status_info})
 
 def update_status_info_element(uid, info_ele_name, info_ele_value):
     if is_user_status_exist(uid):
