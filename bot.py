@@ -224,7 +224,7 @@ cmd_prefix = u'▶'
 
 # setup database
 # db.init('checkundb.json')
-udb = {}
+#udb = {}
 
 # sys.exit(0)
 
@@ -377,6 +377,7 @@ def handle_text_message(event):
 
     id = get_id(event.source)
     print(id)
+    udb = {}
     udb[id] = db.get_status_info(id)
     print(udb[id])
     reply_msgs = []
@@ -1745,6 +1746,7 @@ def save_content(message_id, filename):
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
     id = get_id(event.source)
+    udb = {}
     udb[id] = db.get_status_info(id)
     print(udb[id])
     reply_msgs = []
