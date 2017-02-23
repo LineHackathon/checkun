@@ -4,6 +4,7 @@
 from tinydb import TinyDB, Query
 import aws3
 import vision
+from datetime import datetime
 
 #user table
 #groups table
@@ -52,7 +53,7 @@ def get_all_status():
     return status_table.all()
 
 def get_status_info(uid):
-    print('get_status_info:' + uid)
+    #print('get_status_info:' + uid)
     status_info = {}
     if is_user_status_exist(uid):
         user_status = status_table.search(Query().uid == uid)
@@ -70,7 +71,7 @@ def get_status_info_element_with_name(uid, info_ele_name):
     return info_element
 
 def update_status_info(uid, status_info):
-    print('update_status_info:' + uid)
+    #print('update_status_info:' + uid)
     if is_user_status_exist(uid):
         print(uid + ' exist')
         status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
@@ -84,7 +85,7 @@ def update_status_info_element(uid, info_ele_name, info_ele_value):
         status_info[info_ele_name] = info_ele_value
         status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
 
-def delete_status(uid):
+def delete_status_info(uid):
     status_table.remove(Query().uid == uid)
 
 def is_user_status_exist(uid):
@@ -149,7 +150,6 @@ def add_group(gid,gtype,name=None):
         update_group(gid, name)
     else:
         if name is None:
-            #todo:
             name = gid
 
         users = []
@@ -349,8 +349,7 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
         imageの指定があれば、s3にアップ'''
 
     p_id = len(payment_table) + 1
-    #todo
-    payment_date = '2017/02/28'
+    payment_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     modification_date = payment_date
     payment_table.insert({  'gid':gid,
                             'payment_uid':payment_uid,
@@ -395,8 +394,7 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
         #save receipt to user folder in S3
         aws3.set_receipt(uid, receipt)
 
-    #todo
-    modification_date = '2017/02/28'
+    modification_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     payment['modification_date'] = modification_date
     payment_table.insert(payment, Query().payment_id == payment_id)
 

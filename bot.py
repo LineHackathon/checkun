@@ -7,6 +7,7 @@ import urllib
 import os
 import sys
 import traceback
+from datetime import datetime
 
 from flask import Flask, request, abort, send_from_directory, jsonify
 from linebot import LineBotApi, WebhookHandler
@@ -392,10 +393,10 @@ def handle_text_message(event):
         #print get_name(event.source.user_id)
 
     id = get_id(event.source)
-    print(id)
+    #print(id)
     udb = {}
     udb[id] = db.get_status_info(id)
-    print(udb[id])
+    #print(udb[id])
     reply_msgs = []
     #コマンド受信
     if(event.message.text[0] == cmd_prefix):
@@ -1565,6 +1566,7 @@ http://www.checkun.com/'''))
                     line_bot_api.push_message(gid, msgs)
 
                 del udb[id]
+                db.delete_status_info(id)
             else:
                 reply_msgs.append(TextSendMessage(text = u'ボタンで選んでね'))
 
@@ -1648,7 +1650,8 @@ http://www.checkun.com/'''))
                 # ここでDB登録＆みんなに報告
                 groups = db.get_user_groups(id)
                 for gid in groups:
-                    db.add_payment(gid, id, udb[id]["amount"], udb[id].get("use"), udb[id].get("image_url"))
+                    #db.add_payment(gid, id, udb[id]["amount"], udb[id].get("use"), udb[id].get("image_url"))
+                    db.add_payment(gid, id, udb[id]["amount"], udb[id].get("use"), udb[id].get("image"))
 
                     msgs = []
                     name = get_name(id)
@@ -1661,6 +1664,7 @@ http://www.checkun.com/'''))
                     line_bot_api.push_message(gid, msgs)
 
                 del udb[id]
+                db.delete_status_info(id)
             elif event.message.text == u'訂正する':
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'支払訂正ボタン',
@@ -1764,7 +1768,7 @@ def handle_image_message(event):
     id = get_id(event.source)
     udb = {}
     udb[id] = db.get_status_info(id)
-    print(udb[id])
+    #print(udb[id])
     reply_msgs = []
 
     try:
@@ -1775,9 +1779,14 @@ def handle_image_message(event):
     print status
 
     if status in ['add_photo', 'modify_photo']:
-        udb[id]['image_url'] = base_url + '/static/' + event.message.id + '.jpg'
-        save_content(event.message.id, 'static/' + event.message.id + '.jpg')
-        receipt_amount = vision.get_receipt_amount('static/' + event.message.id + '.jpg')
+        image_name = event.message.id + '_' + datetime.now().strftime("%Y%m%d%H%M%S") + '.jpg'
+        #udb[id]['image_url'] = base_url + '/static/' + event.message.id + '.jpg'
+        #save_content(event.message.id, 'static/' + event.message.id + '.jpg')
+        #udb[id]['image_url'] = image_name
+        udb[id]['image_url'] = base_url + '/static/' + image_name
+        udb[id]['image'] = image_name
+        save_content(event.message.id, 'static/' + image_name)
+        receipt_amount = vision.get_receipt_amount('static/' + image_name)
         print(receipt_amount)
 
         reply_msgs.append(TemplateSendMessage(
