@@ -487,9 +487,10 @@ def handle_text_message(event):
                 reply_msgs.append(TextSendMessage(text = u'{amount}円 これで良ければEnterボタンを押してね'.format(amount=get_commad_number_str(udb[id]['amount']))))
 
         elif cmd == u'支払登録（レシート）':
-            udb[id] = {'status': 'input_amount'}
-            # reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
-            reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
+            #udb[id] = {'status': 'input_amount'}
+            udb[id]['status'] = 'add_photo'
+            reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
+            #reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
         elif cmd == u'確認':
             # reply_msgs.append(TextSendMessage(text = u'何の確認をするかリストから選んでね'))
             reply_msgs.append(TemplateSendMessage(
