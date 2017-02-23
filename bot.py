@@ -377,6 +377,8 @@ def handle_text_message(event):
 
     id = get_id(event.source)
     print(id)
+    udb[id] = db.get_status_info(id)
+    print(udb[id])
     reply_msgs = []
     #コマンド受信
     if(event.message.text[0] == cmd_prefix):
@@ -1421,6 +1423,7 @@ http://www.checkun.com/'''))
             print(udb[id])
             status = udb[id]['status']
         except:
+            print('except')
             status = 'none'
         print status
 
@@ -1725,6 +1728,7 @@ http://www.checkun.com/'''))
 
     # if len(reply_msgs) == 0:
     #     reply_msgs.append(TextSendMessage(text = udb[id]['status']))
+    db.update_status_info(id, udb[id])
 
     if len(reply_msgs):
         try:
@@ -1741,11 +1745,14 @@ def save_content(message_id, filename):
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
     id = get_id(event.source)
+    udb[id] = db.get_status_info(id)
+    print(udb[id])
     reply_msgs = []
 
     try:
         status = udb[id]['status']
     except:
+        print('except')
         status = 'none'
     print status
 
@@ -1779,6 +1786,8 @@ def handle_image_message(event):
             )
         ))
         udb[id]['status'] = 'confirm_modify'
+
+    db.update_status_info(id, udb[id])
 
     if len(reply_msgs) == 0:
         reply_msgs.append(TextSendMessage(text = udb[id]['status']))

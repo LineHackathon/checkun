@@ -29,9 +29,67 @@ group_table = db.table('groups')
 payment_table = db.table('payments')
 debt_table = db.table('debt')
 
+status_db_name = 'db/status.json'
+status_db = TinyDB(status_db_name, indent=2, sort_keys=True, separators=(',', ': '))
+status_table = status_db.table('status')
+
 def update_db():
     aws3.update_db(aws3_db_name)
 
+###################
+# user table
+###################
+def add_status_info(uid, status_info):
+    if is_user_status_exist(uid):
+        update_status_info(uid, status_info)
+    else:
+        status_table.insert({'uid':uid, 'status_info':status_info})
+
+def set_status_info(uid, status_info):
+    update_status_info(uid, status_info)
+
+def get_status_info(uid):
+    print('get_status_info:' + uid)
+    status_info = {}
+    if is_user_status_exist(uid):
+        user_status = status_table.search(Query().uid == uid)
+        status_info = user_status[0]['status_info']
+
+    return status_info
+
+def get_status_info_element_with_name(uid, info_ele_name):
+    info_element = {}
+    if is_user_status_exist(uid):
+        user_status = status_table.search(Query().uid == uid)
+        status_info = user_status[0]['status_info']
+        info_element[info_ele_name] = status_info[info_ele_name]
+
+    return info_element
+
+def update_status_info(uid, status_info):
+    print('update_status_info')
+    user_status = status_table.search(Query().uid == uid)
+    if is_user_status_exist(uid):
+        status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
+
+def update_status_info_element(uid, info_ele_name, info_ele_value):
+    if is_user_status_exist(uid):
+        user_status = status_table.search(Query().uid == uid)
+        status_info = user_status[0]['status_info']
+        status_info[info_ele_name] = info_ele_value
+        status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
+
+def delete_status(uid):
+    status_table.remove(Query().uid == uid)
+
+def is_user_status_exist(uid):
+    return status_table.contains(Query().uid == uid)
+
+def is_status_exist(status):
+    if status is not None and len(status) > 0:
+        return True
+    else:
+        return False
 
 ###################
 # user table
