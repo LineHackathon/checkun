@@ -443,6 +443,7 @@ def handle_text_message(event):
     if event.source.type == 'user':
         update_profile(_id)
 
+    del_flag = False
     #print(id)
     udb = {}
     udb[_id] = db.get_status_info(_id)
@@ -1181,8 +1182,9 @@ def handle_text_message(event):
                         msgs.append(ImageSendMessage(original_content_url = udb[_id]["image"], preview_image_url = udb[_id]["image"]))
                     line_bot_api.push_message(gid, msgs)
 
-                del udb[_id]
-                db.delete_status_info(_id)
+                del_flag = True
+                #del udb[_id]
+                #db.delete_status_info(_id)
             else:
                 reply_msgs.append(TextSendMessage(text = u'ボタンで選んでね'))
 
@@ -1279,8 +1281,9 @@ def handle_text_message(event):
                         msgs.append(ImageSendMessage(original_content_url = udb[_id]["image_url"], preview_image_url = udb[_id]["image_url"]))
                     line_bot_api.push_message(gid, msgs)
 
-                del udb[_id]
-                db.delete_status_info(_id)
+                del_flag = True
+                #del udb[_id]
+                #db.delete_status_info(_id)
             elif event.message.text == u'訂正する':
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'支払訂正ボタン',
@@ -1362,8 +1365,12 @@ def handle_text_message(event):
                     ),
                 ]
             ))
-            
-    db.update_status_info(_id, udb[_id])
+
+    if del_flag == True:
+        del udb[_id]
+        db.delete_status_info(_id)
+    else:
+        db.update_status_info(_id, udb[_id])
 
     send_msgs(reply_msgs, reply_token = event.reply_token)
 
