@@ -1402,7 +1402,7 @@ def handle_image_message(event):
     print status
 
     if status in ['add_photo', 'modify_photo']:
-        udb[_id]['image_url'] = base_url + 'static/' + fname
+        udb[_id]['image_url'] = base_url + '/static/' + fname
         udb[_id]['image'] = fname
         receipt_amount = vision.get_receipt_amount('static/' + fname)
         print(receipt_amount)
