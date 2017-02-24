@@ -2,100 +2,33 @@
 # -*- coding: utf-8 -*-
 
 from tinydb import TinyDB, Query
-import aws3
-import vision
-from datetime import datetime
 
 #user table
 #groups table
 #payments table
 #debt table?
 
-#print('get db start')
+print('get db start')
 #test_db = TinyDB('db/test.json')
 #test_db_file = aws3.get_db('test1')
 #print(test_db_file)
 #test_db = TinyDB(test_db_file)
 
-aws3_db_name = 'checkun'
-db_file = aws3.get_db(aws3_db_name)
+#db_file = aws3.get_db('checkun')
 #test
-#db_file = 'db/checkun.json'
-#print(db_file)
+db_file = 'db/checkun.json'
+print(db_file)
 db = TinyDB(db_file, indent=2, sort_keys=True, separators=(',', ': '))
-#print('get db end')
+print('get db end')
 
 user_table = db.table('users')
 group_table = db.table('groups')
 payment_table = db.table('payments')
-debt_table = db.table('debt')
-
-status_db_name = 'db/status.json'
-status_db = TinyDB(status_db_name, indent=2, sort_keys=True, separators=(',', ': '))
-status_table = status_db.table('status')
 
 def update_db():
-    aws3.update_db(aws3_db_name)
+    #aws3.update_db(checkun)
+    pass
 
-###################
-# user table
-###################
-def add_status_info(uid, status_info):
-    if is_user_status_exist(uid):
-        update_status_info(uid, status_info)
-    else:
-        status_table.insert({'uid':uid, 'status_info':status_info})
-
-def set_status_info(uid, status_info):
-    update_status_info(uid, status_info)
-
-def get_all_status():
-    return status_table.all()
-
-def get_status_info(uid):
-    #print('get_status_info:' + uid)
-    status_info = {}
-    if is_user_status_exist(uid):
-        user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
-
-    return status_info
-
-def get_status_info_element_with_name(uid, info_ele_name):
-    info_element = {}
-    if is_user_status_exist(uid):
-        user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
-        info_element[info_ele_name] = status_info[info_ele_name]
-
-    return info_element
-
-def update_status_info(uid, status_info):
-    #print('update_status_info:' + uid)
-    if is_user_status_exist(uid):
-        print(uid + ' exist')
-        status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
-    else:
-        status_table.insert({'uid':uid, 'status_info':status_info})
-
-def update_status_info_element(uid, info_ele_name, info_ele_value):
-    if is_user_status_exist(uid):
-        user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
-        status_info[info_ele_name] = info_ele_value
-        status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
-
-def delete_status_info(uid):
-    status_table.remove(Query().uid == uid)
-
-def is_user_status_exist(uid):
-    return status_table.contains(Query().uid == uid)
-
-def is_status_exist(status):
-    if status is not None and len(status) > 0:
-        return True
-    else:
-        return False
 
 ###################
 # user table
@@ -109,13 +42,18 @@ def add_user(uid, name, pict, status, follow):
 
     #save pict to user folder in S3
     if pict is not None:
-        aws3.set_user_pict(uid, pict)
+        #aws3.set_user_pict(uid, pict)
+        pass
 
     update_db()
 
 #return list
 def get_user(uid):
-    return user_table.search(Query().uid == uid)
+    users = user_table.search(Query().uid == uid)
+
+    if users:
+        return users[0]
+    return None
 
 #必要なら分割update_user_xxx
 def update_user(uid,name,pict,status,follow):
@@ -142,7 +80,7 @@ def is_user_exist(uid):
 ###################
 # group table
 ###################
-def add_group(gid,gtype,name=None):
+def add_group(gid, gtype, name=None):
     ''' グループ追加
         name(Noneの場合), users, accountant, settlement_users, round は生成'''
 
@@ -150,26 +88,25 @@ def add_group(gid,gtype,name=None):
         update_group(gid, name)
     else:
         if name is None:
+            #todo:
             name = gid
 
-        users = []
-        accountant = False
-        settlement_users = []
-        round_value = 100
-
         group_table.insert({
-                            'gid':gid,
-                            'type':gtype,
-                            'name':name,
-                            'users':users,
-                            'accountant':accountant,
-                            'settlement_users':settlement_users,
-                            'round_value':round_value})
+            'gid':gid,
+            'type':gtype,
+            'name':name,
+            'users':[],
+            'accountant':False,
+            'settlement_users':[],
+            'round_value':100,
+            'rates':{},
+            'additionals':{},
+        })
 
     update_db()
 
 #必要なら分割update_group_xxx
-def update_group(gid, name=None, accountant=None, round_value=None):
+def update_group(gid, name=None, accountant=None, round_value=None, rates=None, additionals=None):
     group = {}
     if name is not None:
         group['name'] = name
@@ -180,6 +117,12 @@ def update_group(gid, name=None, accountant=None, round_value=None):
     if round_value is not None:
         group['round_value'] = round_value
 
+    if rates is not None:
+        group['rates'] = rates
+
+    if additionals is not None:
+        group['additionals'] = additionals
+
     group_table.update(group, Query().gid == gid)
 
     update_db()
@@ -189,19 +132,16 @@ def get_groups():
     #return group_table.get(eid = 'gid')
 
 def get_group_info(gid):
-    group_info = {}
+    groups = group_table.search(Query().gid == gid)
 
-    group = group_table.search(Query().gid == gid)
-
-    if group:
-        # print(group[0])
-        return group[0]
+    if groups:
+        return groups[0]
     return None
 
 def delete_group(gid):
     ''' グループ削除 '''
     group_table.remove(Query().gid == gid)
-    payment_table.remove(Query().gid == gid)
+    # payment_table.remove(Query().gid == gid)
 
     update_db()
 
@@ -210,7 +150,7 @@ def delete_all_groups():
     update_db()
 
 
-def add_user_to_group(uid, gid):
+def add_user_to_group(gid, uid):
     group = group_table.search(Query().gid == gid)
 
     #if group is not None:
@@ -320,10 +260,6 @@ def get_user_groups_payments(uid):
     payments = payment_table.search(Query().gid == gid)
     return payments
 
-#paymentsで管理?
-def set_group_debt_uid_list(gid, uid_list):
-    ''' table(group) の debt_uid を uid_list にする '''
-
 def is_group_exist(gid):
     return group_table.contains(Query().gid == gid)
 
@@ -343,13 +279,14 @@ def is_group_user_exist(gid, uid):
 ###################
 # payment table
 ###################
-def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
+def add_payment(gid, payment_uid, amount, description=None, receipt=None):
     ''' table(payments) に新しい支払を追加
         id, payment_date, modification_date は生成する
         imageの指定があれば、s3にアップ'''
 
     p_id = len(payment_table) + 1
-    payment_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    #todo
+    payment_date = '2017/02/28'
     modification_date = payment_date
     payment_table.insert({  'gid':gid,
                             'payment_uid':payment_uid,
@@ -363,8 +300,8 @@ def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
 
     #save receipt to user folder in S3
     if receipt is not None:
-        aws3.set_receipt(gid, payment_uid, receipt)
-        # pass
+        #aws3.set_receipt(uid, receipt)
+        pass
 
     update_db()
 
@@ -392,9 +329,10 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
     if receipt is not None:
         payment['receipt'] = receipt
         #save receipt to user folder in S3
-        aws3.set_receipt(uid, receipt)
+        #aws3.set_receipt(uid, receipt)
 
-    modification_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    #todo
+    modification_date = '2017/02/28'
     payment['modification_date'] = modification_date
     payment_table.insert(payment, Query().payment_id == payment_id)
 
@@ -410,10 +348,16 @@ def get_group_user_payments(gid, payment_uid):
     return payment_table.search(Query().pid == gid and Query().payment_uid == payment_uid)
 
 
-#debt
-#独立tableでも、groupに追加しても良い
-#誰が誰に支払いするかの一覧になる
-
-
 if __name__ == "__main__":
-    pass
+    gid = 'C5114ec5d843ca9a3ff4aa3fdaef329c5'
+    # user add test
+    # for i in range(10):
+    #     uid = 'test{}'.format(i)
+    #     add_user(uid, uid, None, None, True)
+    #     add_user_to_group(gid, uid)
+    #
+    # # payment add test
+    # for i in range(10):
+    #     uid = 'test{}'.format(i)
+    #     amount = i*1000
+    #     add_payment(gid, uid, amount)
