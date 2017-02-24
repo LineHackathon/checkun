@@ -38,7 +38,7 @@ def update_db():
     aws3.update_db(aws3_db_name)
 
 ###################
-# user table
+# status table
 ###################
 def add_status_info(uid, status_info):
     if is_user_status_exist(uid):
@@ -115,7 +115,11 @@ def add_user(uid, name, pict, status, follow):
 
 #return list
 def get_user(uid):
-    return user_table.search(Query().uid == uid)
+    users = user_table.search(Query().uid == uid)
+
+    if users:
+        return users[0]
+    return None
 
 #必要なら分割update_user_xxx
 def update_user(uid,name,pict,status,follow):
@@ -142,7 +146,7 @@ def is_user_exist(uid):
 ###################
 # group table
 ###################
-def add_group(gid,gtype,name=None):
+def add_group(gid, gtype, name=None):
     ''' グループ追加
         name(Noneの場合), users, accountant, settlement_users, round は生成'''
 
@@ -152,24 +156,22 @@ def add_group(gid,gtype,name=None):
         if name is None:
             name = gid
 
-        users = []
-        accountant = False
-        settlement_users = []
-        round_value = 100
-
         group_table.insert({
-                            'gid':gid,
-                            'type':gtype,
-                            'name':name,
-                            'users':users,
-                            'accountant':accountant,
-                            'settlement_users':settlement_users,
-                            'round_value':round_value})
+            'gid':gid,
+            'type':gtype,
+            'name':name,
+            'users':[],
+            'accountant':False,
+            'settlement_users':[],
+            'round_value':100,
+            'rates':{},
+            'additionals':{},
+        })
 
     update_db()
 
 #必要なら分割update_group_xxx
-def update_group(gid, name=None, accountant=None, round_value=None):
+def update_group(gid, name=None, accountant=None, round_value=None, rates=None, additionals=None):
     group = {}
     if name is not None:
         group['name'] = name
@@ -180,6 +182,12 @@ def update_group(gid, name=None, accountant=None, round_value=None):
     if round_value is not None:
         group['round_value'] = round_value
 
+    if rates is not None:
+        group['rates'] = rates
+
+    if additionals is not None:
+        group['additionals'] = additionals
+
     group_table.update(group, Query().gid == gid)
 
     update_db()
@@ -189,19 +197,16 @@ def get_groups():
     #return group_table.get(eid = 'gid')
 
 def get_group_info(gid):
-    group_info = {}
+    groups = group_table.search(Query().gid == gid)
 
-    group = group_table.search(Query().gid == gid)
-
-    if group:
-        # print(group[0])
-        return group[0]
+    if groups:
+        return groups[0]
     return None
 
 def delete_group(gid):
     ''' グループ削除 '''
     group_table.remove(Query().gid == gid)
-    payment_table.remove(Query().gid == gid)
+    # payment_table.remove(Query().gid == gid)
 
     update_db()
 
@@ -210,7 +215,7 @@ def delete_all_groups():
     update_db()
 
 
-def add_user_to_group(uid, gid):
+def add_user_to_group(gid, uid):
     group = group_table.search(Query().gid == gid)
 
     #if group is not None:
@@ -320,10 +325,6 @@ def get_user_groups_payments(uid):
     payments = payment_table.search(Query().gid == gid)
     return payments
 
-#paymentsで管理?
-def set_group_debt_uid_list(gid, uid_list):
-    ''' table(group) の debt_uid を uid_list にする '''
-
 def is_group_exist(gid):
     return group_table.contains(Query().gid == gid)
 
@@ -343,7 +344,7 @@ def is_group_user_exist(gid, uid):
 ###################
 # payment table
 ###################
-def add_payment(gid, payment_uid, amount=None, description=None, receipt=None):
+def add_payment(gid, payment_uid, amount, description=None, receipt=None):
     ''' table(payments) に新しい支払を追加
         id, payment_date, modification_date は生成する
         imageの指定があれば、s3にアップ'''
