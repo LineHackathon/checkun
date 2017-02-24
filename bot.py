@@ -8,7 +8,7 @@ import os
 import sys
 import traceback
 
-from flask import Flask, request, abort, send_from_directory
+from flask import Flask, request, abort, send_from_directory, render_template
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import *
@@ -158,7 +158,8 @@ def auth_callback():
     msgs.append(TextSendMessage(text = u'{}さんが精算グループに入りました'.format(name)))
     line_bot_api.push_message(state, msgs)
 
-    return 'Auth OK'
+    return render_template("index.html", title="Checkun Login", message=u"ログイン成功", friend_url=line_friend_url, qr_url=line_qr_url)
+    # return 'Auth OK'
 
 @app.route("/", methods=['POST'])
 def callback():
