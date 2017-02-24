@@ -1362,6 +1362,8 @@ def handle_text_message(event):
                     ),
                 ]
             ))
+            
+    db.update_status_info(_id, udb[_id])
 
     send_msgs(reply_msgs, reply_token = event.reply_token)
 
