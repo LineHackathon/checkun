@@ -379,7 +379,8 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
                             'description':description,
                             'receipt':receipt,
                             'payment_date':payment_date,
-                            'modification_date':modification_date
+                            'modification_date':modification_date,
+                            'debt_uids': get_group_users(gid)
                         })
 
     #save receipt to user folder in S3
@@ -425,6 +426,9 @@ def delete_group_payments(gid):
 
     update_db()
 
+def get_payment(eid):
+    return payment_table.get(eid=eid)
+
 #指定ユーザーの全グループでの支払い一覧を削除
 def delete_user_payments(payment_uid):
     payment_table.remove(Query().payment_uid == payment_id)
@@ -453,14 +457,23 @@ def delete_group_user_latest_payment(gid, payment_uid):
 
     update_db()
 
+def delete_payment(eids):
+    ''' table(payments) の id=payment_id を削除 or 不可視にする '''
+    if not isinstance(eids, (list, tuple)):
+        eids = [eids]
+
+    payment_table.remove(eids = eids)
+
+    update_db()
+
 #最後(最新)支払いを更新
 def update_latest_payment(gid, payment_uid, amount=None, description=None, receipt=None):
     group_user_payments = get_group_user_payments(gid, payment_uid)
     if len(group_user_payments) > 0:
         payment_id = len(group_user_payments)
-        update_payment(gid, payment_uid, payment_id, amount, description, receipt)
+        update_payment_with_id(gid, payment_uid, payment_id, amount, description, receipt)
 
-def update_payment(gid, payment_uid, pid, amount=None, description=None, receipt=None):
+def update_payment_with_id(gid, payment_uid, pid, amount=None, description=None, receipt=None):
     ''' table(payments) の amount, description, image を上書きする
         modification_date更新
         imageの指定があれば、s3にアップ'''
@@ -487,6 +500,36 @@ def update_payment(gid, payment_uid, pid, amount=None, description=None, receipt
 
     update_db()
 
+def update_payment(eids, amount=None, description=None, receipt=None, debt_uid = None):
+    ''' table(payments) の amount, description, image を上書きする
+        modification_date更新
+        imageの指定があれば、s3にアップ'''
+    if not isinstance(eids, (list, tuple)):
+        eids = [eids]
+
+    payment = {}
+
+    if amount is not None:
+        payment['amount'] = amount
+
+    if description is not None:
+        payment['description'] = description
+
+    if receipt is not None:
+        payment['receipt'] = receipt
+        #save receipt to user folder in S3
+        #aws3.set_receipt(uid, receipt)
+
+    if debt_uid is not None:
+        payment['debt_uid'] = debt_uid
+
+    modification_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    payment['modification_date'] = modification_date
+    # payment_table.insert(payment, Query().payment_id == payment_id)
+    payment_table.update(payment, eids = eids)
+
+    update_db()
+
 def calc_payment_id(gid, payment_uid):
     group_user_payments = get_group_user_payments(gid, payment_uid)
     pid = len(group_user_payments) + 1
@@ -498,4 +541,15 @@ def calc_payment_id(gid, payment_uid):
 
 
 if __name__ == "__main__":
-    pass
+    gid = 'C5114ec5d843ca9a3ff4aa3fdaef329c5'
+    # user add test
+    for i in range(10):
+        uid = 'test{}'.format(i)
+        add_user(uid, uid, None, None, True)
+        add_user_to_group(gid, uid)
+    #
+    # # payment add test
+    # for i in range(10):
+    #     uid = 'test{}'.format(i)
+    #     amount = i*1000
+    #     add_payment(gid, uid, amount)

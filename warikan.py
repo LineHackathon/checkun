@@ -22,6 +22,12 @@ def calc_warikan3(members, payments, _round=100, additionals={}, rates={}):
     rate_default = 1.0
     additional_default = 0
 
+    print members
+    print payments
+    print _round
+    print additionals
+    print rates
+
     totals={}
     amounts={}
 
