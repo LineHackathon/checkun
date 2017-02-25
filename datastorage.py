@@ -128,8 +128,8 @@ def add_user(uid, name, pict, status, follow):
         user_table.insert({'uid':uid, 'name':name, 'pict':pict, 'status':status, 'follow':follow})
 
     #save pict to user folder in S3
-    if pict is not None:
-        update_user_pict(uid, pict)
+    # if pict is not None:
+    #     update_user_pict(uid, pict)
 
     update_db()
 
