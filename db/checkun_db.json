@@ -1,0 +1,81 @@
+{
+  "_default": {},
+  "debt": {},
+  "groups": {
+    "1": {
+      "accountant": false,
+      "additionals": {},
+      "gid": "9002",
+      "name": "9002",
+      "rates": {},
+      "round_value": 100,
+      "settlement_users": [],
+      "type": "group",
+      "users": [
+        "1001",
+        "1002"
+      ]
+    },
+    "2": {
+      "accountant": false,
+      "additionals": {},
+      "gid": "9001",
+      "name": "9001",
+      "rates": {},
+      "round_value": 100,
+      "settlement_users": [],
+      "type": "group",
+      "users": [
+        "1001"
+      ]
+    }
+  },
+  "payments": {
+    "9": {
+      "amount": "1111",
+      "description": null,
+      "gid": "9001",
+      "modification_date": "2017/02/25 21:23:57",
+      "p_id": 1,
+      "payment_date": "2017/02/25 21:23:57",
+      "payment_uid": "1002",
+      "receipt": null
+    },
+    "11": {
+      "amount": "444",
+      "description": null,
+      "gid": "9002",
+      "modification_date": "2017/02/25 21:24:11",
+      "p_id": 1,
+      "payment_date": "2017/02/25 21:24:11",
+      "payment_uid": "1001",
+      "receipt": null
+    },
+    "12": {
+      "amount": "555",
+      "description": null,
+      "gid": "9002",
+      "modification_date": "2017/02/25 21:24:15",
+      "p_id": 2,
+      "payment_date": "2017/02/25 21:24:15",
+      "payment_uid": "1001",
+      "receipt": null
+    }
+  },
+  "users": {
+    "1": {
+      "follow": true,
+      "name": "test_name",
+      "pict": "checkun.png",
+      "status": "test_status",
+      "uid": "1001"
+    },
+    "2": {
+      "follow": true,
+      "name": "test_name",
+      "pict": "checkun.png",
+      "status": "test_status",
+      "uid": "1002"
+    }
+  }
+}
