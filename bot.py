@@ -1335,7 +1335,7 @@ def handle_postback_event(event):
             reply_msgs.append(TextSendMessage(text = text))
         else:
             gid = groups[0]
-            payments = db.get_group_payment_payments(gid)
+            payments = db.get_group_payments(gid)
             # print payments
             page = data.get('page', 0)
             page_max = (len(payments) - 1) / 2 - 1
