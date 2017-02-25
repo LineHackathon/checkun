@@ -58,7 +58,7 @@ def get_user(uid):
 def add_user(uid):
     print('/add_user/%s' % uid)
     #datastorage.register_user(uid)
-    db.add_user(uid, 'test_name', 'test_pict', 'test_status', True)
+    db.add_user(uid, 'test_name', 'checkun.png', 'test_status', True)
 
     users = db.get_users()
     print(users)
@@ -174,6 +174,103 @@ def download_receipt(gid, uid):
     aws.get_receipt(gid, uid, 'checkun.png')
     return 'ok'
 
+@app.route('/payments')
+def get_payments():
+    print('/payments')
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/payments/group/<gid>')
+def get_group_payments(gid):
+    print('/payments/group/%s' % gid)
+    payments = db.get_group_payments(gid)
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/payments/user/<uid>')
+def get_user_payments(uid):
+    print('/payments/user/%s' % uid)
+    payments = db.get_user_payments(uid)
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/payments/group/<gid>/user/<uid>')
+def get_group_user_payments(gid, uid):
+    #print('/payments/user/%s' % uid)
+    payments = db.get_group_user_payments(gid, uid)
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/payments/group/<gid>/user/<uid>/latest')
+def get_group_user_latest_payment(gid, uid):
+    payment = db.get_group_user_latest_payment(gid, uid)
+    print(payment)
+
+    return jsonify(payment)
+
+@app.route('/addpayment/<gid>/<uid>/<amount>')
+def add_payment(gid, uid, amount):
+    db.add_payment(gid, uid, amount)
+
+    payments = db.get_payments()
+    print(payments)
+    payment = db.get_group_user_latest_payment(gid, uid)
+    print(payment)
+
+    return jsonify({'payments':payments, 'payment':payment})
+
+@app.route('/delpayments/group/<gid>')
+def delete_group_payments(gid):
+    print('/delpayments/group/%s' % gid)
+    db.delete_group_payments(gid)
+
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/delpayments/user/<uid>')
+def delete_user_payments(uid):
+    print('/delpayments/user/%s' % uid)
+    db.delete_user_payments(uid)
+
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/delpayments/group/<gid>/user/<uid>')
+def delete_group_user_payments(gid, uid):
+    db.delete_group_user_payments(gid, uid)
+
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/delpayments/group/<gid>/user/<uid>/latest')
+def delete_group_user_latest_payment(gid, uid):
+    db.delete_group_user_latest_payment(gid, uid)
+
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
+@app.route('/updatepayment/group/<gid>/user/<uid>/<amount>/latest')
+def update_latest_payment():
+    db.update_latest_payment(gid, uid, amount)
+
+    payments = db.get_payments()
+    print(payments)
+
+    return jsonify(payments)
+
 @app.route('/status')
 def get_all_status():
     print('/status')
@@ -226,7 +323,7 @@ except:
     except:
         traceback.print_exc()
         #print(u'読み込みエラー')
-        print('read ok')
+        print('read error')
         sys.exit(-1)
 #print(u'読み込み成功')
 print('read ok')
@@ -484,6 +581,22 @@ def handle_text_message(event):
                             # text=cmd_prefix + u'支払登録（レシート）',
                             data=json.dumps({'cmd': 'input_amount_by_image'})
                         ),
+                    ]
+                )
+            ))
+        elif cmd == u'グループ作成':
+            reply_msgs.append(TemplateSendMessage(
+                alt_text=u'グループ登録ボタン',
+                template=ButtonsTemplate(
+                    # thumbnail_image_url='https://example.com/image.jpg',
+                    title=u'グループ登録',
+                    text=u'グループを作成後、メンバーを招待してね',
+                    actions=[
+                        URITemplateAction(
+                            label=u'グループ新規作成',
+                            # text=cmd_prefix + u'支払登録（金額入力）',
+                            uri='line://group/create'
+                        )
                     ]
                 )
             ))
@@ -1499,14 +1612,15 @@ def handle_join_message(event):
 
     text = u'はじめまして、Checkunです。このグループの会計係をさせていただきます！\n' \
         u'まずは、このグループメンバー全員の方とお友達になりたいです。\n' \
-        u'次のURLかQRコードで友達になってね。\n' \
-        u'友達になったら下のログインボタンで精算グループに入ってね。' \
+        u'下のログインボタンで精算グループに入ってね。'
+        # u'次のURLかQRコードで友達になってね。\n' \
+        # u'友達になったら下のログインボタンで精算グループに入ってね。' \
         # u'グループのスタンプを決めて送ってね'
         # u'左のボタンを押して私と友達になって、右のボタンで精算グループに入ってください！'
     msgs.append(TextSendMessage(text = text))
 
-    msgs.append(TextSendMessage(text = line_friend_url))
-    msgs.append(ImageSendMessage(original_content_url = line_qr_url, preview_image_url = line_qr_url))
+    #msgs.append(TextSendMessage(text = line_friend_url))
+    #msgs.append(ImageSendMessage(original_content_url = line_qr_url, preview_image_url = line_qr_url))
 
     link_uri='https://access.line.me/dialog/oauth/weblogin?response_type=code&client_id={}&redirect_uri={}&state={}'.format(line_login_channel_id, urllib.quote(auth_url), gid)
     msgs.append(ImagemapSendMessage(

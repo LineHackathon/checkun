@@ -4,6 +4,7 @@
 from tinydb import TinyDB, Query
 import aws3
 import vision
+import os
 from datetime import datetime
 
 #user table
@@ -17,7 +18,13 @@ from datetime import datetime
 #print(test_db_file)
 #test_db = TinyDB(test_db_file)
 
-aws3_db_name = 'checkun'
+try:
+    # 環境変数読み込み
+    aws3_db_name = os.environ['CHECKUN_DB_NAME']
+
+except:
+    aws3_db_name = 'checkun'
+
 db_file = aws3.get_db(aws3_db_name)
 #test
 #db_file = 'db/checkun.json'
@@ -35,7 +42,17 @@ status_db = TinyDB(status_db_name, indent=2, sort_keys=True, separators=(',', ':
 status_table = status_db.table('status')
 
 def update_db():
-    aws3.update_db(aws3_db_name)
+    if aws3.is_valid() == True:
+        aws3.update_db(aws3_db_name)
+
+def update_receipt(gid, payment_uid, receipt):
+    if aws3.is_valid() == True:
+        aws3.set_receipt(gid, payment_uid, receipt)
+
+def update_user_pict(uid, pict):
+    if aws3.is_valid() == True:
+        aws3.set_user_pict(uid, pict)
+
 
 ###################
 # status table
@@ -57,7 +74,8 @@ def get_status_info(uid):
     status_info = {}
     if is_user_status_exist(uid):
         user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
+        if len(user_status) > 0:
+            status_info = user_status[0]['status_info']
 
     return status_info
 
@@ -65,8 +83,9 @@ def get_status_info_element_with_name(uid, info_ele_name):
     info_element = {}
     if is_user_status_exist(uid):
         user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
-        info_element[info_ele_name] = status_info[info_ele_name]
+        if len(user_status) > 0:
+            status_info = user_status[0]['status_info']
+            info_element[info_ele_name] = status_info[info_ele_name]
 
     return info_element
 
@@ -81,9 +100,10 @@ def update_status_info(uid, status_info):
 def update_status_info_element(uid, info_ele_name, info_ele_value):
     if is_user_status_exist(uid):
         user_status = status_table.search(Query().uid == uid)
-        status_info = user_status[0]['status_info']
-        status_info[info_ele_name] = info_ele_value
-        status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
+        if len(user_status) > 0:
+            status_info = user_status[0]['status_info']
+            status_info[info_ele_name] = info_ele_value
+            status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
 
 def delete_status_info(uid):
     status_table.remove(Query().uid == uid)
@@ -109,7 +129,7 @@ def add_user(uid, name, pict, status, follow):
 
     #save pict to user folder in S3
     if pict is not None:
-        aws3.set_user_pict(uid, pict)
+        update_user_pict(uid, pict)
 
     update_db()
 
@@ -349,7 +369,7 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
         id, payment_date, modification_date は生成する
         imageの指定があれば、s3にアップ'''
 
-    p_id = len(payment_table) + 1
+    p_id = calc_payment_id(gid, payment_uid)
     payment_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     modification_date = payment_date
     payment_table.insert({  'gid':gid,
@@ -364,25 +384,91 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
 
     #save receipt to user folder in S3
     if receipt is not None:
-        aws3.set_receipt(gid, payment_uid, receipt)
+        update_receipt(gid, payment_uid, receipt)
         # pass
 
     update_db()
 
+#すべての支払い一覧を返す
 def get_payments():
     return payment_table.all()
 
-def delete_payment(payment_id):
-    ''' table(payments) の id=payment_id を削除 or 不可視にする '''
-    payment_table.remove(Query().payment_id == payment_id)
+#指定グループの全メンバーの支払い一覧を返す
+def get_group_payments(gid):
+    return payment_table.search(Query().gid == gid)
+
+#指定ユーザーの全グループでの支払い一覧を返す
+def get_user_payments(payment_uid):
+    return payment_table.search(Query().payment_uid == payment_uid)
+
+#指定グループ、ユーザーの支払い一覧を返す
+def get_group_user_payments(gid, payment_uid):
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid))
+
+#一覧を返すが、基本１つ
+def get_group_user_payments_with_pid(gid, payment_uid, pid):
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid))
+
+#指定グループ、ユーザーの最後(最新)支払いを返す
+#支払い訂正で使用
+def get_group_user_latest_payment(gid, payment_uid):
+    payment = {}
+    group_user_payments = get_group_user_payments(gid, payment_uid)
+    if len(group_user_payments) > 0:
+        payment = group_user_payments[len(group_user_payments) - 1]
+
+    return payment
+
+#指定グループの全メンバーの支払い一覧を削除
+def delete_group_payments(gid):
+    payment_table.remove(Query().gid == gid)
 
     update_db()
 
-def update_payment(payment_id, amount=None, description=None, receipt=None):
+#指定ユーザーの全グループでの支払い一覧を削除
+def delete_user_payments(payment_uid):
+    payment_table.remove(Query().payment_uid == payment_id)
+
+    update_db()
+
+#指定グループ、ユーザーの支払い一覧を削除
+def delete_group_user_payments(gid, payment_uid):
+    payment_table.remove((Query().gid == gid) & (Query().payment_uid == payment_uid))
+
+    update_db()
+
+#指定グループ、ユーザー、pidの支払い(基本１つ)を削除
+def delete_group_user_payments_with_pid(gid, payment_uid, pid):
+    payment_table.remove((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid))
+
+    update_db()
+
+#指定グループ、ユーザー、pidの支払いを削除
+def delete_group_user_latest_payment(gid, payment_uid):
+    group_user_payments = get_group_user_payments(gid, payment_uid)
+    if len(group_user_payments) > 0:
+        payment_id = len(group_user_payments)
+        print(payment_id)
+        payment_table.remove((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == payment_id))
+
+    update_db()
+
+#最後(最新)支払いを更新
+def update_latest_payment(gid, payment_uid, amount=None, description=None, receipt=None):
+    group_user_payments = get_group_user_payments(gid, payment_uid)
+    if len(group_user_payments) > 0:
+        payment_id = len(group_user_payments)
+        update_payment(gid, payment_uid, payment_id, amount, description, receipt)
+
+def update_payment(gid, payment_uid, pid, amount=None, description=None, receipt=None):
     ''' table(payments) の amount, description, image を上書きする
         modification_date更新
         imageの指定があれば、s3にアップ'''
     payment = {}
+
+    group_user_payments = get_group_user_payments_with_pid(gid, payment_uid, pid)
+    if len(group_user_payments) > 0:
+        payment = group_user_payments[0]
 
     if amount is not None:
         payment['amount'] = amount
@@ -393,23 +479,18 @@ def update_payment(payment_id, amount=None, description=None, receipt=None):
     if receipt is not None:
         payment['receipt'] = receipt
         #save receipt to user folder in S3
-        aws3.set_receipt(uid, receipt)
+        update_receipt(gid, payment_uid, receipt)
 
     modification_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     payment['modification_date'] = modification_date
-    payment_table.insert(payment, Query().payment_id == payment_id)
+    payment_table.update(payment, (Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid))
 
     update_db()
 
-#指定groupの全ユーザーのpaymentリスト
-def get_group_payment_payments(gid):
-    ''' table(payments) からuserのamountりすとを渡す '''
-    return payment_table.search(Query().gid == gid)
-
-#指定group、指定ユーザーのpaymentリスト
-def get_group_user_payments(gid, payment_uid):
-    return payment_table.search(Query().pid == gid and Query().payment_uid == payment_uid)
-
+def calc_payment_id(gid, payment_uid):
+    group_user_payments = get_group_user_payments(gid, payment_uid)
+    pid = len(group_user_payments) + 1
+    return pid
 
 #debt
 #独立tableでも、groupに追加しても良い

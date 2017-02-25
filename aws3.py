@@ -1,15 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import boto3
 
-AWS_S3_BUCKET_NAME = 'checkunreceipt'
+try:
+    # 環境変数読み込み
+    aws_flag = True
+    aws_s3_bucket_name = os.environ['AWS_S3_BUCKET_NAME']
+
+except:
+    aws_flag = False
+    aws_s3_bucket_name = 'testtest'
+#AWS_S3_BUCKET_NAME = 'checkunreceipt'
+
+def is_valid():
+	return aws_flag
 
 def get_db(name):
 	print('get_db')
 	s3 = boto3.resource('s3')
 
-	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
+	bucket = s3.Bucket(aws_s3_bucket_name)
 
 	file_path = 'db' + '/' + name + '.json'
 	key = file_path
@@ -39,7 +51,7 @@ def update_db(name):
 	print('update_db')
 	s3 = boto3.resource('s3')
 
-	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
+	bucket = s3.Bucket(aws_s3_bucket_name)
 
 	file_path = 'db' + '/' + name + '.json'
 	key = file_path
@@ -62,25 +74,25 @@ def get_user_pict(uid, pict_name):
 #file_name:receipt_uid_date_time.jpg
 def set_receipt(gid, uid, file_name):
 	file_path = 'static' + '/' + file_name
-	key = 'groups' + gid + '/' + uid + '_' + file_name
+	key = 'groups' + '/' + gid + '/' + uid + '_' + file_name
 	set_file(key, file_path)
 
 #get file and save to /static/file_name
 def get_receipt(gid, uid, file_name):
 	file_path = 'static' + '/' + file_name
-	key = 'groups' + gid + '/' + uid + '_' + file_name
+	key = 'groups' + '/' + gid + '/' + uid + '_' + file_name
 	get_file(key, file_path)
 
 def delete_receipt(gid, uid, file_name):
 	file_path = 'static' + '/' + file_name
-	key = 'groups' + gid + '/' + uid + '_' + file_name
+	key = 'groups' + '/' + gid + '/' + uid + '_' + file_name
 	delete_file(key, file_path)
 
 
 def set_file(key, file_path):
 	s3 = boto3.resource('s3')
 
-	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
+	bucket = s3.Bucket(aws_s3_bucket_name)
 	#print(bucket.name)
 	#print(bucket.objects.all())
 	#for obj_summary in bucket.objects.all():
@@ -93,7 +105,7 @@ def set_file(key, file_path):
 def get_file(key, file_path):
 	s3 = boto3.resource('s3')
 
-	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
+	bucket = s3.Bucket(aws_s3_bucket_name)
 	#print(bucket.name)
 	#print(bucket.objects.all())
 	#for obj_summary in bucket.objects.all():
@@ -111,7 +123,7 @@ def get_file(key, file_path):
 def delete_file(gid, uid, file_name):
 	s3 = boto3.resource('s3')
 
-	bucket = s3.Bucket(AWS_S3_BUCKET_NAME)
+	bucket = s3.Bucket(aws_s3_bucket_name)
 	#print(bucket.name)
 	#print(bucket.objects.all())
 	#for obj_summary in bucket.objects.all():
