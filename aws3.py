@@ -22,6 +22,8 @@ def get_db(name):
 	s3 = boto3.resource('s3')
 
 	bucket = s3.Bucket(aws_s3_bucket_name)
+	print(aws_s3_bucket_name)
+	print(bucket.name)
 
 	file_path = 'db' + '/' + name + '.json'
 	key = file_path
