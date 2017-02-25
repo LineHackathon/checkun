@@ -18,13 +18,7 @@ from datetime import datetime
 #print(test_db_file)
 #test_db = TinyDB(test_db_file)
 
-try:
-    # 環境変数読み込み
-    aws3_db_name = os.environ['CHECKUN_DB_NAME']
-
-except:
-    aws3_db_name = 'checkun'
-
+aws3_db_name = 'checkun'
 db_file = aws3.get_db(aws3_db_name)
 #test
 #db_file = 'db/checkun.json'
