@@ -36,9 +36,9 @@ try:
 except:
     try:
         # load from json
-        # f = open('checkun_test.json', 'r')
+        f = open('checkun_test.json', 'r')
         # f = open('checkun_dev.json', 'r')
-        f = open('checkun_main.json', 'r')
+        # f = open('checkun_main.json', 'r')
         json_dict = json.load(f)
         f.close
 
@@ -223,8 +223,8 @@ def update_profile(uid, follow=True):
     print p.display_name
 
 def get_name(uid):
-    # return db.get_user(uid)['name']
-    return line_bot_api.get_profile(uid).display_name
+    return db.get_user(uid)['name']
+    # return line_bot_api.get_profile(uid).display_name
 
 def send_msgs(msgs, reply_token = None, uid = None, uids = None):
     if not isinstance(msgs, (list, tuple)):
@@ -310,8 +310,19 @@ def handle_text_message(event):
         elif cmd[0:2] == u'電卓':
             if len(cmd[2:]) == 1:
                 if cmd[2] == 'E':
-                    udb[_id]['status'] = 'input_use'
-                    reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えて(ex.レンタカー代)'.format(amount=get_commad_number_str(udb[_id].get('amount', 0)))))
+                    try:
+                        status = udb[_id]['status']
+                    except:
+                        status = 'none'
+                    print status
+                    if status == 'input_amount':
+                        udb[_id]['status'] = 'input_use'
+                        reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えて(ex.レンタカー代)'.format(amount=get_commad_number_str(udb[_id].get('amount', 0)))))
+                    else:
+                        amount = udb[_id].get('amount', 0)
+                        db.update_payment(udb[_id]['eid'], amount = amount)
+                        reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
+
                 elif cmd[2] == 'C':
                     udb[_id]['amount'] = 0
                 else:
@@ -359,436 +370,7 @@ def handle_text_message(event):
                     ]
                 )
             ))
-        elif cmd == u'支払メンバー確認':
-            pass
-        elif cmd == u'個別支払合計':
-            pass
-        elif cmd == u'支払一覧':
-            pass
-            # uid = event.source.user_id
-            # payments = db.get_user_groups_payments(uid)
-            # for payment in payments:
-            #     pass
-            # reply_msgs.append(TemplateSendMessage(
-            #     alt_text='支払一覧',
-            #     template=ButtonsTemplate(
-            #         # thumbnail_image_url=udb[_id].get('image_url', None),
-            #         title=u'支払一覧',
-            #         text = u'リストの登録金額を選択すると詳細を表示するよ。表示は新しいものから表示しています。',
-            #         actions=[
-            #             MessageTemplateAction(
-            #             # PostbackTemplateAction(
-            #                 label=u'『支払金額』(『支払対象人数』)',
-            #                 text=cmd_prefix + u'『支払金額』(『支払対象人数』)',
-            #                 # data=json.dumps({'cmd': 'input_amount_by_image'})
-            #             ),
-            #             MessageTemplateAction(
-            #             # PostbackTemplateAction(
-            #                 label=u'『支払金額』(『支払対象人数』)',
-            #                 text=cmd_prefix + u'『支払金額』(『支払対象人数』)',
-            #                 # data=json.dumps({'cmd': 'input_amount_by_image'})
-            #             ),
-            #             MessageTemplateAction(
-            #             # PostbackTemplateAction(
-            #                 label=u'『支払金額』(『支払対象人数』)',
-            #                 text=cmd_prefix + u'『支払金額』(『支払対象人数』)',
-            #                 # data=json.dumps({'cmd': 'input_amount_by_image'})
-            #             ),
-            #             MessageTemplateAction(
-            #             # PostbackTemplateAction(
-            #                 label=u'『支払金額』(『支払対象人数』)',
-            #                 text=cmd_prefix + u'『支払金額』(『支払対象人数』)',
-            #                 # data=json.dumps({'cmd': 'input_amount_by_image'})
-            #             ),
-            #         ]
-            #     )
-            # ))
-        elif cmd == u'『支払金額』(『支払対象人数』)':
-            text = u'''『対象ユーザ』さんが『項目名』で『支払金額』円支払
-いました。
-この支払いに対する支払対象者は『支払対象人数』名で
-す。
-『対象ユーザ』さん
-『対象ユーザ』さん
-・
-・
-・
-『対象ユーザ』さん
-『対象ユーザ』さん
-会計係さん'''
-            reply_msgs.append(TextSendMessage(text = text))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'支払一覧',
-                    text = u'リストの登録金額を選択すると詳細を表示するよ。表示は新しいものから表示しています。',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'何もしない',
-                            text=cmd_prefix + u'何もしない',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'支払対象変更',
-                            text=cmd_prefix + u'支払対象変更',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'内容訂正',
-                            text=cmd_prefix + u'内容訂正',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'支払削除',
-                            text=cmd_prefix + u'支払削除',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'何もしない':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'何もしないボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'支払一覧に戻りますか?',
-                    text=u'支払一覧に戻りますか?',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'戻る',
-                            text=cmd_prefix + u'支払一覧',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'終了する',
-                            text=cmd_prefix + u'終了する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'終了する':
-            reply_msgs.append(TextSendMessage(text = u'支払一覧確認を終了しました'))
 
-        elif cmd == u'支払対象変更':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払対象変更ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'支払対象変更?',
-                    text = u'行いたい操作をリストから選んでください。',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'1名だけにする',
-                            text=cmd_prefix + u'1名だけにする',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'1名減らす',
-                            text=cmd_prefix + u'1名減らす',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'1名増やす',
-                            text=cmd_prefix + u'1名増やす',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'全員対象にする',
-                            text=cmd_prefix + u'全員対象にする',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'1名だけにする':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'1名だけにするボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'特定支払',
-                    text = u'支払対象となるユーザーをリストから選んでください。',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'特定支払『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'特定支払『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'特定支払『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'キャンセル',
-                            text=cmd_prefix + u'キャンセル',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'特定支払『対象ユーザ』さん':
-            # db.set_debt_uid_list(gid, uid_list)
-            db.set_debt_uid_list('sample_gid', ['sample_user'])
-            reply_msgs.append(TextSendMessage(text = u'支払対象者を『対象ユーザ』さんに設定しました'))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧に戻りますか?',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'支払一覧に戻りますか?',
-                    text = u'支払一覧に戻りますか?',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'戻る',
-                            text=cmd_prefix + u'支払一覧',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'終了する',
-                            text=cmd_prefix + u'終了する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'1名減らす':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払対象除外',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'支払対象除外',
-                    text = u'支払対象から除外するユーザーをリストから選んでください。',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'キャンセル',
-                            text=cmd_prefix + u'キャンセル',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'1名増やす':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払対象追加',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'支払対象追加',
-                    text = u'支払対象に追加するユーザーをリストから選んでください',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'『対象ユーザ』さん',
-                            text=cmd_prefix + u'『対象ユーザ』さん',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'キャンセル',
-                            text=cmd_prefix + u'キャンセル',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'全員対象にする':
-            reply_msgs.append(TextSendMessage(text = u'全てのユーザを支払対象に設定しました'))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧に戻りますか?',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'支払一覧に戻りますか?',
-                    text = u'支払一覧に戻りますか?',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'戻る',
-                            text=cmd_prefix + u'支払一覧',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'終了する',
-                            text=cmd_prefix + u'終了する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-
-        elif cmd == u'内容訂正':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払訂正ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url='https://example.com/image.jpg',
-                    title=u'支払訂正',
-                    text=u'訂正する項目をリストから選んでね',
-                    actions=[
-                        # PostbackTemplateAction(
-                        MessageTemplateAction(
-                            label=u'金額',
-                            text=cmd_prefix + u'支払訂正金額',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                            label=u'支払項目',
-                            text=cmd_prefix + u'支払訂正項目',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        # PostbackTemplateAction(
-                        MessageTemplateAction(
-                            label=u'写真',
-                            text=cmd_prefix + u'支払訂正写真',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'支払削除':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払削除ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url='https://example.com/image.jpg',
-                    # title=u'支払削除',
-                    text=u'この支払を削除してもよいですか？',
-                    actions=[
-                        # PostbackTemplateAction(
-                        MessageTemplateAction(
-                            label=u'削除',
-                            text=cmd_prefix + u'支払削除実行',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                            label=u'中止',
-                            text=cmd_prefix + u'中止',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'支払削除実行':
-            # db.delete_payment(payment_id)
-            reply_msgs.append(TextSendMessage(text = u'支払を削除しました'))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧に戻りますか?',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'支払一覧に戻りますか?',
-                    text = u'支払一覧に戻りますか?',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'戻る',
-                            text=cmd_prefix + u'支払一覧',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'終了する',
-                            text=cmd_prefix + u'終了する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'中止':
-            reply_msgs.append(TextSendMessage(text = u'削除操作を中止しました'))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧に戻りますか?',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'支払一覧に戻りますか?',
-                    text = u'支払一覧に戻りますか?',
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'戻る',
-                            text=cmd_prefix + u'支払一覧',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'終了する',
-                            text=cmd_prefix + u'終了する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'支払訂正金額':
-            # db.update_payment(amount, description, image)
-            # db.update_payment(amout = 1000)
-            reply_msgs.append(TextSendMessage(text = u'省略'))
-        elif cmd == u'支払訂正項目':
-            # db.update_payment(description = 'テスト')
-            reply_msgs.append(TextSendMessage(text = u'省略'))
-        elif cmd == u'支払訂正写真':
-            # db.update_payment(image = 'https://example.com/image')
-            reply_msgs.append(TextSendMessage(text = u'省略'))
         elif cmd == u'精算':
             reply_msgs.append(TemplateSendMessage(
                 alt_text=u'精算',
@@ -880,16 +462,21 @@ def handle_text_message(event):
             status = 'none'
         print status
 
-        if status == 'input_amount':
+        if status in ['input_amount', 'modify_payment_amount']:
             if event.message.text.isdigit():
                 amount = int(event.message.text)
                 if (amount < 1) | (amount > 999999):
                     reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
 
                 else:
-                    udb[_id]['status'] = 'input_use'
-                    udb[_id]['amount'] = amount
-                    reply_msgs.append(TextSendMessage(text = u'何の金額か教えて(ex.レンタカー代)'))
+                    if status == 'input_amount':
+                        udb[_id]['amount'] = amount
+                        udb[_id]['status'] = 'input_use'
+                        reply_msgs.append(TextSendMessage(text = u'何の金額か教えて(ex.レンタカー代)'))
+                    else:
+                        db.update_payment(udb[_id]['eid'], amount = amount)
+                        reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
+
 
             else:
                 reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
@@ -919,6 +506,11 @@ def handle_text_message(event):
                 )
             ))
             udb[_id]['status'] = 'ask_photo_addition'
+
+        elif status == 'modify_payment_description':
+            description = event.message.text
+            db.update_payment(udb[_id]['eid'], description=description)
+            reply_msgs.append(TextSendMessage(u'支払項目を{}に更新しました'.format(description)))
 
         elif status == 'ask_photo_addition':
             if event.message.text == u'OK':
@@ -1189,14 +781,10 @@ def save_content(message_id, filename):
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
     _id = get_id(event.source)
-
     if event.source.type == 'user':
         update_profile(_id)
-
-    fname = 'static/' + event.message.id + '.jpg'
-    save_content(event.message.id, fname)
-
     reply_msgs = []
+
     try:
         status = udb[_id]['status']
     except:
@@ -1204,7 +792,8 @@ def handle_image_message(event):
     print status
 
     if status in ['add_photo', 'modify_photo']:
-        udb[_id]['image_url'] = base_url + '/' + fname
+        udb[_id]['image_url'] = base_url + '/static/' + event.message.id + '.jpg'
+        save_content(event.message.id, 'static/' + event.message.id + '.jpg')
 
         reply_msgs.append(TemplateSendMessage(
             alt_text='登録確認',
@@ -1413,6 +1002,530 @@ def handle_postback_event(event):
 
         reply_msgs.append(TextSendMessage(text = text))
     elif cmd == 'show_payment_list':
+        gid = db.get_user_groups(_id)[0]
+        payments = db.get_group_payment_payments(gid)
+        # print payments
+        page = data.get('page', 0)
+        page_max = (len(payments) - 1) / 2 - 1
+        if page_max < 0:
+            page_max = 0
+
+        actions = []
+        add_next = False
+        if page == page_max:
+            if page == 0:
+                start = 0
+                end = len(payments)
+            else:
+                start = page * 2 + 1
+                end = len(payments)
+        else:
+            add_next = True
+            if page == 0:
+                start = 0
+                end = start + 3
+            else:
+                start = page * 2 + 1
+                end = start + 2
+                actions.append(
+                    PostbackTemplateAction(
+                        label=u'前のページ',
+                        data=json.dumps({'cmd': cmd, 'page': page - 1})
+                    )
+                )
+        for payment in payments[start:end]:
+            label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
+            actions.append(
+                PostbackTemplateAction(
+                    label=label,
+                    data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
+                )
+            )
+        if add_next:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'次のページ',
+                    data=json.dumps({'cmd': cmd, 'page': page + 1})
+                )
+            )
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払一覧',
+            template=ButtonsTemplate(
+                # thumbnail_image_url=udb[_id].get('image_url', None),
+                title=u'支払一覧',
+                text = u'変更したい支払を選んでください',
+                actions = actions,
+            )
+        ))
+    elif cmd == 'modify_payment':
+        eid = data['eid']
+        payment = db.get_payment(eid)
+        text = u'{}さんが{}で{}円支払いました\n'.format(get_name(payment['payment_uid']), payment['description'], get_commad_number_str(payment['amount']))
+        text += u'この支払に対する支払対象者は次の通りです\n'
+        for uid in payment.get('debt_uid', db.get_group_users(payment['gid'])):
+            text += u'{}さん\n'.format(get_name(uid))
+        reply_msgs.append(TextSendMessage(text = text))
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払操作',
+            template=ButtonsTemplate(
+                thumbnail_image_url=payment.get('receipt'),
+                title=u'支払操作',
+                text=u'この支払に対して操作しますか？',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'何もしない',
+                        data=json.dumps({'cmd': 'modify_payment_cancel'})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'支払対象変更',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'内容訂正',
+                        data=json.dumps({'cmd': 'modify_payment_payment', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'支払削除',
+                        data=json.dumps({'cmd': 'delete_payment', 'eid': eid})
+                    ),
+                ]
+            )
+        ))
+
+    elif cmd == 'modify_payment_cancel':
+        reply_msgs.append(TextSendMessage(text = u'支払操作をキャンセルしました'))
+    elif cmd == 'modify_payment_debt_list':
+        eid = data['eid']
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払対象変更',
+            template=ButtonsTemplate(
+                text = u'行いたい操作をリストから選んでください。',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'1名だけにする',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_person', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'1名減らす',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_decrease', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'1名増やす',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'全員対象にする',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_all', 'eid': eid})
+                    ),
+                ]
+            )
+        ))
+    elif cmd == 'modify_payment_debt_list_set_person':
+        eid = data['eid']
+        payment = db.get_payment(eid)
+        gid = payment['gid']
+        ginfo = db.get_group_info(gid)
+        users = ginfo['users']
+
+        page = data.get('page', 0)
+        page_max = (len(users) - 1) / 2 - 1
+        if page_max < 0:
+            page_max = 0
+
+        actions = []
+        add_next = False
+        if page == page_max:
+            if page == 0:
+                start = 0
+                end = len(users)
+            else:
+                start = page * 2 + 1
+                end = len(users)
+        else:
+            add_next = True
+            if page == 0:
+                start = 0
+                end = start + 3
+            else:
+                start = page * 2 + 1
+                end = start + 2
+                actions.append(
+                    PostbackTemplateAction(
+                        label=u'前のページ',
+                        data=json.dumps({'cmd': cmd, 'page': page - 1})
+                    )
+                )
+        for uid in users[start:end]:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'{}さん'.format(get_name(uid)),
+                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_person_selected', 'eid': payment.eid, 'uid': uid})
+                )
+            )
+        if add_next:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'次のページ',
+                    data=json.dumps({'cmd': cmd, 'page': page + 1})
+                )
+            )
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払対象者選択',
+            template=ButtonsTemplate(
+                # thumbnail_image_url=udb[_id].get('image_url', None),
+                text = u'誰を支払対象にしますか？',
+                actions = actions,
+            )
+        ))
+    elif cmd == 'modify_payment_debt_list_set_person_selected':
+        eid = data['eid']
+        uid = data['uid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text='支払対象設定確認',
+            template=ConfirmTemplate(
+                text = u'{}さんを支払対象にしますか？'.format(get_name(uid)),
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_person_confirm', 'eid': eid, 'uid': data['uid'], 'value': True})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_person_confirm', 'eid': eid, 'uid': data['uid'], 'value': False})
+                    ),
+                ]
+            )
+        ))
+
+    elif cmd == 'modify_payment_debt_list_set_person_confirm':
+        eid = data['eid']
+        uid = data['uid']
+        value = data['value']
+        if value is True:
+            payment = db.get_payment(eid)
+            payment['debt_uid'] = [uid]
+            db.update_payment(eid, debt_uid = payment['debt_uid'])
+            reply_msgs.append(TextSendMessage(u'支払対象を{}さんに変更しました'.format(get_name(uid))))
+        else:
+            reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
+    elif cmd == 'modify_payment_debt_list_set_decrease':
+        eid = data['eid']
+        payment = db.get_payment(eid)
+        gid = payment['gid']
+        ginfo = db.get_group_info(gid)
+        users = payment.get('debt_uid', ginfo['users'])
+
+        page = data.get('page', 0)
+        page_max = (len(users) - 1) / 2 - 1
+        if page_max < 0:
+            page_max = 0
+
+        actions = []
+        add_next = False
+        if page == page_max:
+            if page == 0:
+                start = 0
+                end = len(users)
+            else:
+                start = page * 2 + 1
+                end = len(users)
+        else:
+            add_next = True
+            if page == 0:
+                start = 0
+                end = start + 3
+            else:
+                start = page * 2 + 1
+                end = start + 2
+                actions.append(
+                    PostbackTemplateAction(
+                        label=u'前のページ',
+                        data=json.dumps({'cmd': cmd, 'eid': eid, 'page': page - 1})
+                    )
+                )
+        for uid in users[start:end]:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'{}さん'.format(get_name(uid)),
+                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_decrease_selected', 'eid': eid, 'uid': uid})
+                )
+            )
+        if add_next:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'次のページ',
+                    data=json.dumps({'cmd': cmd, 'eid': eid, 'page': page + 1})
+                )
+            )
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払対象除外者選択',
+            template=ButtonsTemplate(
+                # thumbnail_image_url=udb[_id].get('image_url', None),
+                text = u'誰を支払対象から除外しますか？',
+                actions = actions,
+            )
+        ))
+    elif cmd == 'modify_payment_debt_list_set_decrease_selected':
+        eid = data['eid']
+        uid = data['uid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text='支払対象設定確認',
+            template=ConfirmTemplate(
+                text = u'{}さんを支払対象から除外しますか？'.format(get_name(uid)),
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_decrease_confirm', 'eid': eid, 'uid': data['uid'], 'value': True})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_decrease_confirm', 'eid': eid, 'uid': data['uid'], 'value': False})
+                    ),
+                ]
+            )
+        ))
+
+    elif cmd == 'modify_payment_debt_list_set_decrease_confirm':
+        eid = data['eid']
+        uid = data['uid']
+        value = data['value']
+        if value is True:
+            payment = db.get_payment(eid)
+            gid = payment['gid']
+            ginfo = db.get_group_info(gid)
+            users = payment.get('debt_uid', ginfo['users'])
+            users.remove(uid)
+            db.update_payment(eid, debt_uid = users)
+            reply_msgs.append(TextSendMessage(u'{}さんを支払対象から除外しました'.format(get_name(uid))))
+        else:
+            reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
+    elif cmd == 'modify_payment_debt_list_set_increase':
+        eid = data['eid']
+        payment = db.get_payment(eid)
+        gid = payment['gid']
+        ginfo = db.get_group_info(gid)
+        users = ginfo['users']
+        debt_uid = payment.get('debt_uid', ginfo['users'])
+        for duid in debt_uid:
+            if duid in users:
+                users.remove(duid)
+
+        page = data.get('page', 0)
+        page_max = (len(users) - 1) / 2 - 1
+        if page_max < 0:
+            page_max = 0
+
+        actions = []
+        add_next = False
+        if page == page_max:
+            if page == 0:
+                start = 0
+                end = len(users)
+            else:
+                start = page * 2 + 1
+                end = len(users)
+        else:
+            add_next = True
+            if page == 0:
+                start = 0
+                end = start + 3
+            else:
+                start = page * 2 + 1
+                end = start + 2
+                actions.append(
+                    PostbackTemplateAction(
+                        label=u'前のページ',
+                        data=json.dumps({'cmd': cmd, 'eid': eid, 'page': page - 1})
+                    )
+                )
+        for uid in users[start:end]:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'{}さん'.format(get_name(uid)),
+                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase_selected', 'eid': payment.eid, 'uid': uid})
+                )
+            )
+        if add_next:
+            actions.append(
+                PostbackTemplateAction(
+                    label=u'次のページ',
+                    data=json.dumps({'cmd': cmd, 'eid': eid, 'page': page + 1})
+                )
+            )
+
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払対象追加者選択',
+            template=ButtonsTemplate(
+                # thumbnail_image_url=udb[_id].get('image_url', None),
+                text = u'誰を支払対象に追加しますか？',
+                actions = actions,
+            )
+        ))
+    elif cmd == 'modify_payment_debt_list_set_increase_selected':
+        eid = data['eid']
+        uid = data['uid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text='支払対象設定確認',
+            template=ConfirmTemplate(
+                text = u'{}さんを支払対象に追加しますか？'.format(get_name(uid)),
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase_confirm', 'eid': eid, 'uid': data['uid'], 'value': True})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase_confirm', 'eid': eid, 'uid': data['uid'], 'value': False})
+                    ),
+                ]
+            )
+        ))
+
+    elif cmd == 'modify_payment_debt_list_set_increase_confirm':
+        eid = data['eid']
+        uid = data['uid']
+        value = data['value']
+        if value is True:
+            debt_uid = db.get_payment(eid)['debt_uid']
+            debt_uid.append(uid)
+            db.update_payment(eid, debt_uid = debt_uid)
+            reply_msgs.append(TextSendMessage(u'{}さんを支払対象に追加しました'.format(get_name(uid))))
+        else:
+            reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
+    elif cmd == 'modify_payment_debt_list_set_all':
+        eid = data['eid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text='全員対象確認',
+            template=ConfirmTemplate(
+                text = u'この支払に対して全員を対象にしますか？',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_all_confirm', 'eid': eid, 'value': True})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'modify_payment_debt_list_set_all_confirm', 'eid': eid, 'value': False})
+                    ),
+                ]
+            )
+        ))
+
+    elif cmd == 'modify_payment_debt_list_set_all_confirm':
+        eid = data['eid']
+        value = data['value']
+        if value is True:
+            payment = db.get_payment(eid)
+            gid = payment['gid']
+            ginfo = db.get_group_info(gid)
+            db.update_payment(eid, debt_uid = ginfo['users'])
+            reply_msgs.append(TextSendMessage(u'支払対象を全員に変更しました'))
+        else:
+            reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
+
+
+
+    elif cmd == 'modify_payment_payment':
+        eid = data['eid']
+        payment = db.get_payment(eid)
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払内容変更',
+            template=ButtonsTemplate(
+                thumbnail_image_url=payment['receipt'],
+                text = u'変更する情報を選んでください',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'金額：{}円'.format(get_commad_number_str(payment['amount'])),
+                        data=json.dumps({'cmd': 'modify_payment_amount', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'支払項目：{}'.format(payment['description']),
+                        data=json.dumps({'cmd': 'modify_payment_description', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'写真',
+                        data=json.dumps({'cmd': 'modify_payment_receipt', 'eid': eid})
+                    ),
+                ]
+            )
+        ))
+    elif cmd == 'modify_payment_amount':
+        eid = data['eid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払金額変更',
+            template=ButtonsTemplate(
+                # thumbnail_image_url='https://example.com/image.jpg',
+                # title=u'支払登録',
+                text=u'入力方法を選択してください',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'数値入力',
+                        data=json.dumps({'cmd': 'modify_payment_amount_by_number', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'電卓入力',
+                        data=json.dumps({'cmd': 'modify_payment_amount_by_calc', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'レシート画像',
+                        data=json.dumps({'cmd': 'modify_payment_amount_by_image', 'eid': eid})
+                    ),
+                ]
+            )
+        ))
+    elif cmd == 'modify_payment_amount_by_number':
+        eid = data['eid']
+        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid}
+        reply_msgs.append(TextSendMessage(text = u'金額を入力してね(1~999,999)'))
+    elif cmd == 'modify_payment_amount_by_calc':
+        eid = data['eid']
+        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid, 'amount': 0}
+        reply_msgs.append(make_calc_message())
+    elif cmd == 'modify_payment_amount_by_image':
+        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid}
+        # reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
+        reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
+
+    elif cmd == 'modify_payment_description':
+        eid = data['eid']
+        udb[_id] = {'status': 'modify_payment_description', 'eid': eid}
+        reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください'))
+    elif cmd == 'modify_payment_receipt':
+        eid = data['eid']
+
+    elif cmd == 'delete_payment':
+        eid = data['eid']
+        reply_msgs.append(TemplateSendMessage(
+            alt_text=u'支払削除確認',
+            template=ConfirmTemplate(
+                text = u'支払データを削除します。よろしいですか？',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'実行する',
+                        data=json.dumps({'cmd': 'delete_payment_do', 'eid': eid})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'キャンセル',
+                        data=json.dumps({'cmd': 'delete_payment_cancel'})
+                    ),
+                ]
+            )
+        ))
+    elif cmd == 'delete_payment_do':
+        eid = data['eid']
+        reply_msgs.append(TextSendMessage(text = u'支払データを削除しました'))
+        db.delete_payment(eid)
+
+    elif cmd == 'delete_payment_cancel':
+        reply_msgs.append(TextSendMessage(text = u'支払削除をキャンセルしました'))
+
+
+    elif cmd == 'show_payment_list':
         text = u'現時点の支払い一覧を報告します。\n'
         groups = db.get_user_groups(event.source.user_id)
         for gid in groups:
@@ -1495,10 +1608,10 @@ def handle_postback_event(event):
                 else:
                     pass
 
-            line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
+            # line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
 
-        reply_msgs.append(TextSendMessage(text = text))
-        # reply_msgs.append(TextSendMessage(text = transfer_text))
+        # reply_msgs.append(TextSendMessage(text = text))
+        reply_msgs.append(TextSendMessage(text = transfer_text))
     elif cmd == 'check_start_no':
         reply_msgs.append(TextSendMessage(text = u'精算処理を中止しました'))
     elif cmd == 'check_report':
@@ -1847,5 +1960,5 @@ def handle_beacon_event(event):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
-    # app.run(debug=True, port=5001)
+    # app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
