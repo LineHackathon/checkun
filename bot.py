@@ -2371,6 +2371,16 @@ def handle_postback_event(event):
 
     elif cmd == 'byebye_yes':
         reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
+        send_msgs(reply_msgs, _id)
+
+        if(event.source.type == 'group'):
+            line_bot_api.leave_group(event.source.group_id)
+            gid = event.source.group_id
+        elif(event.source.type == 'room'):
+            line_bot_api.leave_room(event.source.room_id)
+            gid = event.source.room_id
+        db.delete_group(gid)
+
     elif cmd == 'byebye_no':
         reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
 
