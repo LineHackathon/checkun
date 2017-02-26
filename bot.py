@@ -21,6 +21,102 @@ import vision
 
 app = Flask(__name__)
 
+
+# 環境変数が見つかればそっちを読む
+# 見つからなければjsonファイルを読む
+# なければエラー終了
+try:
+    # 環境変数読み込み
+    line_messaging_api_token = os.environ['LINE_MESSAGING_API_TOKEN']
+    line_messaging_api_secret = os.environ['LINE_MESSAGING_API_SECRET']
+    line_friend_url = os.environ['LINE_FRIEND_URL']
+    line_qr_url = os.environ['LINE_QR_URL']
+    line_login_channel_id = os.environ['LINE_LOGIN_CHANNEL_ID']
+    line_login_secret = os.environ['LINE_LOGIN_SECRET']
+    base_url = os.environ['CHECKUN_BASE_URL']
+    print('os.envrion')
+
+except:
+    try:
+        # load from json
+        f = open('checkun_test.json', 'r')
+        # f = open('checkun_dev.json', 'r')
+        # f = open('checkun_main.json', 'r')
+        json_dict = json.load(f)
+        f.close
+
+        line_messaging_api_token = json_dict['LINE_MESSAGING_API_TOKEN']
+        line_messaging_api_secret = json_dict['LINE_MESSAGING_API_SECRET']
+        line_friend_url = json_dict['LINE_FRIEND_URL']
+        line_qr_url = json_dict['LINE_QR_URL']
+        line_login_channel_id = json_dict['LINE_LOGIN_CHANNEL_ID']
+        line_login_secret = json_dict['LINE_LOGIN_SECRET']
+        base_url = json_dict['CHECKUN_BASE_URL']
+        print('json')
+
+    except:
+        traceback.print_exc()
+        #print(u'読み込みエラー')
+        print('read error')
+        sys.exit(-1)
+#print(u'読み込み成功')
+print('read ok')
+
+# setup LINE Messaging API
+line_bot_api = LineBotApi(line_messaging_api_token)
+handler = WebhookHandler(line_messaging_api_secret)
+
+# setup LINE Login API
+auth_url = base_url + '/auth'
+
+cmd_prefix = u'▶'
+
+# setup database
+# db.init('checkundb.json')
+#udb = {}
+
+checkun_url = 'http://checkun.hippy.jp/'
+# sys.exit(0)
+
+def line_login_get_access_token(code):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    payload = {
+        'grant_type': 'authorization_code',
+        'client_id': line_login_channel_id,
+        'client_secret': line_login_secret,
+        'code': code,
+        'redirect_uri': auth_url
+        }
+
+    r = requests.post(
+        'https://api.line.me/v2/oauth/accessToken',
+        headers = headers,
+        params = payload
+    )
+    #app.logger.info('Auth token: ' + str(r.json()))
+    # print payload
+    # print r.json()
+    # print r.url
+
+    return r.json().get('access_token')
+
+def line_login_get_user_profiles(token):
+    headers = {'Authorization': 'Bearer {' + token + '}'}
+
+    r = requests.get(
+        'https://api.line.me/v2/profile',
+        headers = headers,
+    )
+    #app.logger.info('Auth prof: ' + str(r.json()))
+    # print payload
+    # print r.json()
+    # print r.url
+
+    return r.json()
+
+def get_commad_number_str(number):
+    return(u'{:,d}'.format(number))
+
 @app.route('/')
 def get_all():
     print('/')
@@ -287,102 +383,6 @@ def get_status(uid):
 
     return jsonify(status_info)
 
-
-# 環境変数が見つかればそっちを読む
-# 見つからなければjsonファイルを読む
-# なければエラー終了
-try:
-    # 環境変数読み込み
-    line_messaging_api_token = os.environ['LINE_MESSAGING_API_TOKEN']
-    line_messaging_api_secret = os.environ['LINE_MESSAGING_API_SECRET']
-    line_friend_url = os.environ['LINE_FRIEND_URL']
-    line_qr_url = os.environ['LINE_QR_URL']
-    line_login_channel_id = os.environ['LINE_LOGIN_CHANNEL_ID']
-    line_login_secret = os.environ['LINE_LOGIN_SECRET']
-    base_url = os.environ['CHECKUN_BASE_URL']
-    print('os.envrion')
-
-except:
-    try:
-        # load from json
-        f = open('checkun_test.json', 'r')
-        # f = open('checkun_dev.json', 'r')
-        # f = open('checkun_main.json', 'r')
-        json_dict = json.load(f)
-        f.close
-
-        line_messaging_api_token = json_dict['LINE_MESSAGING_API_TOKEN']
-        line_messaging_api_secret = json_dict['LINE_MESSAGING_API_SECRET']
-        line_friend_url = json_dict['LINE_FRIEND_URL']
-        line_qr_url = json_dict['LINE_QR_URL']
-        line_login_channel_id = json_dict['LINE_LOGIN_CHANNEL_ID']
-        line_login_secret = json_dict['LINE_LOGIN_SECRET']
-        base_url = json_dict['CHECKUN_BASE_URL']
-        print('json')
-
-    except:
-        traceback.print_exc()
-        #print(u'読み込みエラー')
-        print('read error')
-        sys.exit(-1)
-#print(u'読み込み成功')
-print('read ok')
-
-# setup LINE Messaging API
-line_bot_api = LineBotApi(line_messaging_api_token)
-handler = WebhookHandler(line_messaging_api_secret)
-
-# setup LINE Login API
-auth_url = base_url + '/auth'
-
-cmd_prefix = u'▶'
-
-# setup database
-# db.init('checkundb.json')
-#udb = {}
-
-checkun_url = 'http://checkun.hippy.jp/'
-# sys.exit(0)
-
-def line_login_get_access_token(code):
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    payload = {
-        'grant_type': 'authorization_code',
-        'client_id': line_login_channel_id,
-        'client_secret': line_login_secret,
-        'code': code,
-        'redirect_uri': auth_url
-        }
-
-    r = requests.post(
-        'https://api.line.me/v2/oauth/accessToken',
-        headers = headers,
-        params = payload
-    )
-    #app.logger.info('Auth token: ' + str(r.json()))
-    # print payload
-    # print r.json()
-    # print r.url
-
-    return r.json().get('access_token')
-
-def line_login_get_user_profiles(token):
-    headers = {'Authorization': 'Bearer {' + token + '}'}
-
-    r = requests.get(
-        'https://api.line.me/v2/profile',
-        headers = headers,
-    )
-    #app.logger.info('Auth prof: ' + str(r.json()))
-    # print payload
-    # print r.json()
-    # print r.url
-
-    return r.json()
-
-def get_commad_number_str(number):
-    return(u'{:,d}'.format(number))
-
 @app.route('/images/<title>/<width>', methods=['GET'])
 def images(title, width):
     # print(title)
@@ -423,14 +423,21 @@ def auth_callback():
     uid = profile.get("userId")
     name = profile.get("displayName")
 
-    # add_user_warikan_group(uid, state)
-    db.add_user_to_group(state, uid)
     msgs = []
-    msgs.append(TextSendMessage(text = u'{}さんが精算グループに入りました'.format(name)))
+    groups = db.get_user_groups(uid)
+    print groups
+    if len(groups) != 0:
+        if groups[0] == state:
+            msgs.append(TextSendMessage(text = u'{}さんはすでにメンバーです。'.format(name)))
+        else:
+            msgs.append(TextSendMessage(text = u'{}さんは他のグループで利用しているため入れません。'.format(name)))
+
+    else:
+        db.add_user_to_group(state, uid)
+        msgs.append(TextSendMessage(text = u'{}さんが精算グループに入りました'.format(name)))
+
     line_bot_api.push_message(state, msgs)
 
-    #return 'Auth OK'
-    #return '<HTML><HEAD><meta http-equiv="refresh" content="1;URL="></HEAD></HTML>'
     return render_template("index.html", title="Checkun Login", message=u"ログイン成功", friend_url=line_friend_url, qr_url=line_qr_url)
 
 @app.route("/", methods=['POST'])
@@ -491,12 +498,15 @@ def update_profile(uid, follow=True):
         print_error(e)
 
     db.add_user(uid, p.display_name, p.picture_url, p.status_message, follow)
-    # print get_name(_id)
+    print uid
+    # print str(get_name(uid))
     #print p.display_name
 
 def get_name(uid):
-    # return db.get_user(uid)['name']
-    return line_bot_api.get_profile(uid).display_name
+    name = db.get_user(uid).get('name')
+    if name is None:
+        name = line_bot_api.get_profile(uid).display_name
+    return name
 
 def send_msgs(msgs, reply_token = None, uid = None, uids = None):
     if not isinstance(msgs, (list, tuple)):
@@ -552,54 +562,38 @@ def handle_text_message(event):
         cmd = event.message.text[1:]
 
         if cmd == u'支払登録':
-            user_groups = db.get_user_groups(_id)
-            # if len(user_groups) == 0:
-            #     reply_msgs.append(TextSendMessage(text = u'まだグループに所属していません'))
-            # elif len(user_groups) > 1:
-            #     reply_msgs.append(TextSendMessage(text = u'複数のグループに所属しているね'))
+            groups = db.get_user_groups(_id)
+            if len(groups) == 0:
+            # if True:
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
 
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払登録ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url='https://example.com/image.jpg',
-                    title=u'支払登録',
-                    text=u'何か支払ったんだね\nリストから選んでね',
-                    actions=[
-                        PostbackTemplateAction(
-                            label=u'金額入力で登録',
-                            # text=cmd_prefix + u'支払登録（金額入力）',
-                            data=json.dumps({'cmd': 'input_amount_by_number'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'電卓入力で登録',
-                            # text=cmd_prefix + u'支払登録（電卓入力）',
-                            data=json.dumps({'cmd': 'input_amount_by_calc'})
-                        ),
-                        # PostbackTemplateAction(
-                        PostbackTemplateAction(
-                            label=u'レシートで登録',
-                            # text=cmd_prefix + u'支払登録（レシート）',
-                            data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-        elif cmd == u'グループ作成':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'グループ登録ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url='https://example.com/image.jpg',
-                    title=u'グループ登録',
-                    text=u'グループを作成後、メンバーを招待してね',
-                    actions=[
-                        URITemplateAction(
-                            label=u'グループ新規作成',
-                            # text=cmd_prefix + u'支払登録（金額入力）',
-                            uri='line://group/create'
-                        )
-                    ]
-                )
-            ))
+            else:
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'支払登録ボタン',
+                    template=ButtonsTemplate(
+                        # thumbnail_image_url='https://example.com/image.jpg',
+                        title=u'支払登録',
+                        text=u'何か支払ったんだね\nリストから選んでね',
+                        actions=[
+                            PostbackTemplateAction(
+                                label=u'金額入力で登録',
+                                # text=cmd_prefix + u'支払登録（金額入力）',
+                                data=json.dumps({'cmd': 'input_amount_by_number'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'電卓入力で登録',
+                                # text=cmd_prefix + u'支払登録（電卓入力）',
+                                data=json.dumps({'cmd': 'input_amount_by_calc'})
+                            ),
+                            # PostbackTemplateAction(
+                            PostbackTemplateAction(
+                                label=u'レシート画像で登録',
+                                # text=cmd_prefix + u'支払登録（レシート）',
+                                data=json.dumps({'cmd': 'input_amount_by_image'})
+                            ),
+                        ]
+                    )
+                ))
         elif cmd[0:2] == u'電卓':
             if len(cmd[2:]) == 1:
                 if cmd[2] == 'E':
@@ -632,118 +626,212 @@ def handle_text_message(event):
                 reply_msgs.append(TextSendMessage(text = u'{amount}円 これで良ければEnterボタンを押してね'.format(amount=get_commad_number_str(udb[_id]['amount']))))
 
         elif cmd == u'確認':
-            # reply_msgs.append(TextSendMessage(text = u'何の確認をするかリストから選んでね'))
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'確認ボタン',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url='https://example.com/image.jpg',
-                    title=u'確認',
-                    text=u'何の確認をするかリストから選んでね',
-                    actions=[
-                        PostbackTemplateAction(
-                            label=u'支払メンバー確認',
-                            # text=cmd_prefix + u'支払メンバー確認',
-                            data=json.dumps({'cmd': 'show_group_members'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'個別支払合計',
-                            # text=cmd_prefix + u'個別支払合計',
-                            data=json.dumps({'cmd': 'show_members_amount'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'支払一覧',
-                            # text=cmd_prefix + u'支払一覧',
-                            data=json.dumps({'cmd': 'show_payment_list'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'精算設定確認',
-                            # text=cmd_prefix + u'精算設定確認',
-                            data=json.dumps({'cmd': 'show_check_config'})
-                        ),
-                    ]
-                )
-            ))
+            groups = db.get_user_groups(_id)
+            if len(groups) == 0:
+            # if True:
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+
+            else:
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'確認ボタン',
+                    template=ButtonsTemplate(
+                        # thumbnail_image_url='https://example.com/image.jpg',
+                        title=u'確認',
+                        text=u'何の確認をするかリストから選んでね',
+                        actions=[
+                            PostbackTemplateAction(
+                                label=u'支払メンバー確認',
+                                # text=cmd_prefix + u'支払メンバー確認',
+                                data=json.dumps({'cmd': 'show_group_members'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'個別支払合計',
+                                # text=cmd_prefix + u'個別支払合計',
+                                data=json.dumps({'cmd': 'show_members_amount'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'支払一覧',
+                                # text=cmd_prefix + u'支払一覧',
+                                data=json.dumps({'cmd': 'show_payment_list'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'精算設定確認',
+                                # text=cmd_prefix + u'精算設定確認',
+                                data=json.dumps({'cmd': 'show_check_config'})
+                            ),
+                        ]
+                    )
+                ))
 
         elif cmd == u'精算':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'精算',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'精算',
-                    text = u'何の処理をするかリストから選んでね',
-                    actions=[
-                        PostbackTemplateAction(
-                            label=u'精算実行・更新',
-                            # text=cmd_prefix + u'精算実行・更新',
-                            data=json.dumps({'cmd': 'check_start'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'精算報告',
-                            # text=cmd_prefix + u'精算報告',
-                            data=json.dumps({'cmd': 'check_report'})
-                        ),
-                        PostbackTemplateAction(
-                            label=u'精算結果確認',
-                            # text=cmd_prefix + u'精算結果確認',
-                            data=json.dumps({'cmd': 'check_status'})
-                        ),
-                    ]
-                )
-            ))
+            groups = db.get_user_groups(_id)
+            if len(groups) == 0:
+            # if True:
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+
+            else:
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'精算',
+                    template=ButtonsTemplate(
+                        # thumbnail_image_url=udb[_id].get('image_url', None),
+                        title=u'精算',
+                        text = u'何の処理をするかリストから選んでね',
+                        actions=[
+                            PostbackTemplateAction(
+                                label=u'精算実行・更新',
+                                # text=cmd_prefix + u'精算実行・更新',
+                                data=json.dumps({'cmd': 'check_start'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'精算報告',
+                                # text=cmd_prefix + u'精算報告',
+                                data=json.dumps({'cmd': 'check_report'})
+                            ),
+                            PostbackTemplateAction(
+                                label=u'精算結果確認',
+                                # text=cmd_prefix + u'精算結果確認',
+                                data=json.dumps({'cmd': 'check_status'})
+                            ),
+                        ]
+                    )
+                ))
 
         elif cmd == u'設定':
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'設定',
-                template=CarouselTemplate(
-                    columns=[
-                        CarouselColumn(
-                            # thumbnail_image_url=base_url + '/static/car.jpg',
-                            title=u'精算設定',
-                            text=u'どれを操作するかリストから選んでね',
-                            actions=[
-                                PostbackTemplateAction(
-                                    label=u'丸め設定',
-                                    # text=cmd_prefix + u'丸め設定',
-                                    data=json.dumps({'cmd': 'set_round'})
-                                ),
-                                PostbackTemplateAction(
-                                    label=u'傾斜設定',
-                                    # text=cmd_prefix + u'傾斜設定',
-                                    data=json.dumps({'cmd': 'set_slope'})
-                                ),
-                                PostbackTemplateAction(
-                                    label=u'精算設定確認',
-                                    # text=cmd_prefix + u'精算設定確認',
-                                    data=json.dumps({'cmd': 'show_check_config'})
-                                ),
-                            ]
-                        ),
-                        CarouselColumn(
-                            # thumbnail_image_url=base_url + '/static/car.jpg',
-                            title=u'全般',
-                            text=u'どれを操作するかリストから選んでね',
-                            actions=[
-                                PostbackTemplateAction(
-                                    label=u'会計係の設定',
-                                    # text=cmd_prefix + u'会計係の設定',
-                                    data=json.dumps({'cmd': 'set_accountant'})
-                                ),
-                                PostbackTemplateAction(
-                                    label=u'初期化',
-                                    # text=cmd_prefix + u'初期化',
-                                    data=json.dumps({'cmd': 'initialize'})
-                                ),
-                                PostbackTemplateAction(
-                                    label=u'改善要望・バグ報告',
-                                    # text=cmd_prefix + u'改善要望・バグ報告',
-                                    data=json.dumps({'cmd': 'report'})
-                                ),
-                            ]
-                        ),
+            groups = db.get_user_groups(_id)
+            if len(groups) == 0:
+            # if True:
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
 
-                    ]
-                )
-            ))
+            else:
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'設定',
+                    template=CarouselTemplate(
+                        columns=[
+                            CarouselColumn(
+                                # thumbnail_image_url=base_url + '/static/car.jpg',
+                                title=u'精算設定(1/3)',
+                                text=u'どれを操作するかリストから選んでね',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'丸め設定',
+                                        # text=cmd_prefix + u'丸め設定',
+                                        data=json.dumps({'cmd': 'set_round'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'傾斜設定',
+                                        # text=cmd_prefix + u'傾斜設定',
+                                        data=json.dumps({'cmd': 'set_slope'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'精算設定確認',
+                                        # text=cmd_prefix + u'精算設定確認',
+                                        data=json.dumps({'cmd': 'show_check_config'})
+                                    ),
+                                ]
+                            ),
+                            CarouselColumn(
+                                # thumbnail_image_url=base_url + '/static/car.jpg',
+                                title=u'精算設定(2/3)',
+                                text=u'どれを操作するかリストから選んでね',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'会計係の設定',
+                                        # text=cmd_prefix + u'会計係の設定',
+                                        data=json.dumps({'cmd': 'set_accountant'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'ヘルプ',
+                                        # text=cmd_prefix + u'初期化',
+                                        data=json.dumps({'cmd': 'help'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'初期化',
+                                        # text=cmd_prefix + u'初期化',
+                                        data=json.dumps({'cmd': 'initialize'})
+                                    ),
+                                ]
+                            ),
+                            CarouselColumn(
+                                # thumbnail_image_url=base_url + '/static/car.jpg',
+                                title=u'精算設定(3/3)',
+                                text=u'どれを操作するかリストから選んでね',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'改善要望・バグ報告',
+                                        # text=cmd_prefix + u'改善要望・バグ報告',
+                                        data=json.dumps({'cmd': 'report'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'Checkunの解除',
+                                        data=json.dumps({'cmd': 'byebye'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'　',
+                                        data=json.dumps({'cmd': ''})
+                                    ),
+                                ]
+                            ),
+
+                        ]
+                    )
+                ))
+
+        elif cmd == u'迷った':
+            groups = db.get_user_groups(_id)
+            if len(groups) == 0:
+            # if True:
+                reply_msgs.append(TextSendMessage(text = u'まだどこのグループにも所属していません'))
+                image_url = 'https://s3-us-west-2.amazonaws.com/checkunreceipt/static_images/invite_checkun.jpg'
+                reply_msgs.append(ImageSendMessage(
+                    original_content_url = image_url,
+                    preview_image_url = image_url,
+                ))
+                reply_msgs.append(TextSendMessage(text = u'まずはグループに招待するか、ここに友達を招待して、精算グループに入ってね'))
+            else:
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'設定',
+                    template=CarouselTemplate(
+                        columns=[
+                            CarouselColumn(
+                                title=u'アクション１',
+                                text=u'何がしたいですか？',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'精算メンバーを調べたい',
+                                        data=json.dumps({'cmd': 'help_group_member'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'支払合計を把握したい',
+                                        data=json.dumps({'cmd': 'help_amount'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'精算に傾斜をつけたい',
+                                        data=json.dumps({'cmd': 'help_slope'})
+                                    ),
+                                ]
+                            ),
+                            CarouselColumn(
+                                title=u'アクション２',
+                                text=u'何がしたいですか？',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'割り勘単位を変更したい',
+                                        data=json.dumps({'cmd': 'help_round'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'別のグループで使いたい',
+                                        data=json.dumps({'cmd': 'help_change_group'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'Checkunを解除したい',
+                                        data=json.dumps({'cmd': 'help_byebye'})
+                                    ),
+                                ]
+                            ),
+
+                        ]
+                    )
+                ))
 
         else:
             reply_msgs.append(TextSendMessage(text = u'知らないコマンドだ'))
@@ -2257,6 +2345,35 @@ def handle_postback_event(event):
     elif cmd == 'set_accountant_no':
         reply_msgs.append(TextSendMessage(text = u'会計係設定を解除しました'))
 
+    elif cmd == 'help':
+        reply_msgs.append(TextSendMessage(text = u'以下のリンクを見てみてね\nhttp://checkun.hippy.jp/#sec04'))
+
+    elif cmd == 'byebye':
+        reply_msgs.append(TextSendMessage(text = u'グループに確認メッセージを送ったよ'))
+        msg = TemplateSendMessage(
+            alt_text=u'Checkun解除確認',
+            template=ButtonsTemplate(
+                text = u'Checkunをこのグループから解除します。よろしいですか？',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'byebye_yes'})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'byebye_no'})
+                    ),
+                ]
+            )
+        )
+        groups = db.get_user_groups(_id)
+        send_msgs(msg, uid = groups[0])
+
+    elif cmd == 'byebye_yes':
+        reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
+    elif cmd == 'byebye_no':
+        reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
+
     elif cmd == 'initialize':
         reply_msgs.append(TemplateSendMessage(
             alt_text=u'初期化',
@@ -2286,6 +2403,24 @@ def handle_postback_event(event):
     elif cmd == 'report':
         reply_msgs.append(TextSendMessage(text = u'''以下のリンクからお問い合わせください
 {}'''.format(checkun_url)))
+
+    elif cmd == 'help_group_member':
+        reply_msgs.append(TextSendMessage(text = u'「確認」→「精算メンバー確認」を押してみてね。\nメンバーが揃ってない場合はグループに招待してね。'))
+
+    elif cmd == 'help_amount':
+        reply_msgs.append(TextSendMessage(text = u'「確認」→「個別支払合計」を押してみて。'))
+
+    elif cmd == 'help_slope':
+        reply_msgs.append(TextSendMessage(text = u'「設定」→「傾斜設定」を押してね。'))
+
+    elif cmd == 'help_round':
+        reply_msgs.append(TextSendMessage(text = u'「設定」→「丸め設定」を押してね。'))
+
+    elif cmd == 'help_change_group':
+        reply_msgs.append(TextSendMessage(text = u'現在、複数のグループで同時に利用することはできません。精算を早めに済ませてCheckunを解除してから新しいグループで利用してください。\nCheckunを解除は、「設定」→「Checkunの解除」を押してね。'))
+
+    elif cmd == 'help_byebye':
+        reply_msgs.append(TextSendMessage(text = u'「設定」→「Checkunの解除」を押してね。'))
 
     db.update_status_info(_id, udb[_id])
 

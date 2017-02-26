@@ -124,6 +124,7 @@ def add_user(uid, name, pict, status, follow):
     ''' ユーザ追加 '''
     if is_user_exist(uid):
         update_user(uid,name,pict,status,follow)
+        return
     else:
         user_table.insert({'uid':uid, 'name':name, 'pict':pict, 'status':status, 'follow':follow})
 
@@ -137,14 +138,19 @@ def add_user(uid, name, pict, status, follow):
 def get_user(uid):
     users = user_table.search(Query().uid == uid)
 
+    if len(users) > 1:
+        print '{} in user_table is more than one!!'.format(uid)
     if users:
         return users[0]
     return None
 
 #必要なら分割update_user_xxx
 def update_user(uid,name,pict,status,follow):
-    user_table.update({'uid':uid, 'name':name, 'pict':pict, 'status':status, 'follow':follow}, Query().uid == uid)
-    update_db()
+    new_user_data = {'uid':uid, 'name':name, 'pict':pict, 'status':status, 'follow':follow}
+
+    if new_user_data != get_user(uid):
+        user_table.update(new_user_data, Query().uid == uid)
+        update_db()
 
 #return list
 def get_users():
