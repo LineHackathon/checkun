@@ -1227,7 +1227,7 @@ def handle_image_message(event):
         udb[_id]['amount'] = int(receipt_amount)
 
         thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = receipt_amount)
-        if udb[_id].get("use") is not None:
+        if udb[_id].get("use") is None:
             thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = receipt_amount)
 
         reply_msgs.append(TemplateSendMessage(
