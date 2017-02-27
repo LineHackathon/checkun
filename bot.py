@@ -565,7 +565,7 @@ def handle_text_message(event):
             groups = db.get_user_groups(_id)
             if len(groups) == 0:
             # if True:
-                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに招待してね。'))
 
             else:
                 reply_msgs.append(TemplateSendMessage(
@@ -644,7 +644,7 @@ def handle_text_message(event):
             groups = db.get_user_groups(_id)
             if len(groups) == 0:
             # if True:
-                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに招待してね。'))
 
             else:
                 reply_msgs.append(TemplateSendMessage(
@@ -682,7 +682,7 @@ def handle_text_message(event):
             groups = db.get_user_groups(_id)
             if len(groups) == 0:
             # if True:
-                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに招待してね。'))
 
             else:
                 reply_msgs.append(TemplateSendMessage(
@@ -715,7 +715,7 @@ def handle_text_message(event):
             groups = db.get_user_groups(_id)
             if len(groups) == 0:
             # if True:
-                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに私を招待するか、友達をこのトークに招待してね。'))
+                reply_msgs.append(TextSendMessage(text = u'グループに所属してません。グループに招待してね。'))
 
             else:
                 reply_msgs.append(TemplateSendMessage(
@@ -801,7 +801,7 @@ def handle_text_message(event):
                     original_content_url = image_url,
                     preview_image_url = image_url,
                 ))
-                reply_msgs.append(TextSendMessage(text = u'まずはグループに招待するか、ここに友達を招待して、精算グループに入ってね'))
+                reply_msgs.append(TextSendMessage(text = u'まずはグループに招待してね'))
             else:
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'設定',
@@ -1292,7 +1292,7 @@ def handle_follow_message(event):
     text = u'''はじめまして、Checkunです。
 グループ旅行やイベントの面倒な精算作業は私にお任せ。
 
-まずは、グループトークに私を招待してみてね。
+まずは、グループに私を招待してね。
 
 使い方について知りたい場合は、メニューの「ヘルプ」か以下のリンクから調べてみてね。
 {}'''.format(checkun_url)
@@ -2002,7 +2002,7 @@ def handle_postback_event(event):
         reply_msgs.append(TemplateSendMessage(
             alt_text=u'精算実行確認',
             template=ConfirmTemplate(
-                text = u'新しい精算を開始します。よろしいですか?以前に実行した精算情報は全て消えてしまいます。',
+                text = u'精算を開始します。よろしいですか？以前に精算実行している場合は、もう一度精算しなおします。',
                 actions=[
                     PostbackTemplateAction(
                         label=u'実行する',
@@ -2248,7 +2248,7 @@ def handle_postback_event(event):
             reply_msgs.append(TextSendMessage(text = text))
         else:
             gid = groups[0]
-            reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜割合をリセットしました'))
+            reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜割合をリセットしました。'))
             db.update_group(gid, rates = {})
 
     elif cmd == 'set_rates_user':
@@ -2467,7 +2467,7 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'「設定」→「丸め設定」を押してね。'))
 
     elif cmd == 'help_change_group':
-        reply_msgs.append(TextSendMessage(text = u'現在、複数のグループで同時に利用することはできません。精算を早めに済ませてCheckunを解除してから新しいグループで利用してください。\nCheckunを解除は、「設定」→「Checkunの解除」を押してね。'))
+        reply_msgs.append(TextSendMessage(text = u'現在、複数のグループで同時に利用することはできません。精算を早めに済ませてCheckunを解除してから新しいグループで利用してください。\nCheckunの解除は、「設定」→「Checkunの解除」を押してね。'))
 
     elif cmd == 'help_byebye':
         reply_msgs.append(TextSendMessage(text = u'「設定」→「Checkunの解除」を押してね。'))
