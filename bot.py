@@ -839,7 +839,7 @@ def handle_text_message(event):
     else:
         try:
             print(_id)
-            print(udb[_id])
+            #print(udb[_id])
             status = udb[_id]['status']
         except:
             print('except')
