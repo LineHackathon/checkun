@@ -18,6 +18,7 @@ from linebot.models import *
 import datastorage as db
 import warikan
 import vision
+import aws3 as aws
 
 app = Flask(__name__)
 
