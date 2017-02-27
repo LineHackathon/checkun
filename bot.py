@@ -812,7 +812,7 @@ def handle_text_message(event):
                                 text=u'何がしたいですか？',
                                 actions=[
                                     PostbackTemplateAction(
-                                        label=u'精算メンバーを調べたい',
+                                        label=u'支払メンバー把握',
                                         data=json.dumps({'cmd': 'help_group_member'})
                                     ),
                                     PostbackTemplateAction(
@@ -830,11 +830,11 @@ def handle_text_message(event):
                                 text=u'何がしたいですか？',
                                 actions=[
                                     PostbackTemplateAction(
-                                        label=u'割り勘単位を変更したい',
+                                        label=u'割り勘単位を変更',
                                         data=json.dumps({'cmd': 'help_round'})
                                     ),
                                     PostbackTemplateAction(
-                                        label=u'別のグループで使いたい',
+                                        label=u'別のグループで使う',
                                         data=json.dumps({'cmd': 'help_change_group'})
                                     ),
                                     PostbackTemplateAction(
@@ -1949,7 +1949,7 @@ def handle_postback_event(event):
     elif cmd == 'modify_payment_description':
         eid = data['eid']
         udb[_id] = {'status': 'modify_payment_description', 'eid': eid}
-        reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください'))
+        reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください(例.レンタカー代)※10文字まで'))
     elif cmd == 'modify_payment_receipt':
         eid = data['eid']
 
@@ -2455,7 +2455,7 @@ def handle_postback_event(event):
 {}'''.format(checkun_url)))
 
     elif cmd == 'help_group_member':
-        reply_msgs.append(TextSendMessage(text = u'「確認」→「精算メンバー確認」を押してみてね。\nメンバーが揃ってない場合はグループに招待してね。'))
+        reply_msgs.append(TextSendMessage(text = u'「確認」→「支払メンバー確認」を押してみてね。\nメンバーが揃ってない場合はグループに招待してね。'))
 
     elif cmd == 'help_amount':
         reply_msgs.append(TextSendMessage(text = u'「確認」→「個別支払合計」を押してみて。'))
