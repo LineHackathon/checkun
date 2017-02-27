@@ -1516,6 +1516,9 @@ def handle_postback_event(event):
         eid = data['eid']
         print eid
         payment = db.get_payment(eid)
+        print payment['payment_uid']
+        print payment['description']
+        print payment['amount']
         text = u'{}さんが{}で{}円支払いました\n'.format(get_name(payment['payment_uid']), payment['description'], get_commad_number_str(payment['amount']))
         text += u'この支払に対する支払対象者は次の通りです\n'
         for uid in payment.get('debt_uid', db.get_group_users(payment['gid'])):
