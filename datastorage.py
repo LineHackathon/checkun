@@ -232,7 +232,7 @@ def get_group_info(gid):
 def delete_group(gid):
     ''' グループ削除 '''
     group_table.remove(Query().gid == gid)
-    # payment_table.remove(Query().gid == gid)
+    payment_table.remove(Query().gid == gid)
 
     update_db()
 
