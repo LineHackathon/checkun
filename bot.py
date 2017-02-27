@@ -1227,9 +1227,9 @@ def handle_image_message(event):
 
         if udb[_id].get("use") is None:
             udb[_id]['amount'] = int(receipt_amount)
-            thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = udb[_id]['amount'])
+            thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = get_commad_number_str(udb[_id]['amount']))
         else:
-            thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = udb[_id]['amount'])
+            thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
 
         reply_msgs.append(TemplateSendMessage(
             alt_text='登録確認',
