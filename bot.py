@@ -1503,6 +1503,7 @@ def handle_postback_event(event):
                             )
                         )
 
+                print len(actions)
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'支払一覧',
                     template=ButtonsTemplate(
