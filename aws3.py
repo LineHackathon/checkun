@@ -112,6 +112,9 @@ def set_file(key, file_path):
     data = open(file_path, 'rb')
     bucket.put_object(Key=key, Body=data)
 
+    obj = bucket.Object(key)
+    obj.Acl().put(ACL='public-read')
+
 
 def get_file(key, file_path):
     s3 = boto3.resource('s3')
