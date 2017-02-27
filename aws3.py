@@ -115,6 +115,8 @@ def set_file(key, file_path):
     obj = bucket.Object(key)
     obj.Acl().put(ACL='public-read')
 
+    return 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
+
 
 def get_file(key, file_path):
     s3 = boto3.resource('s3')

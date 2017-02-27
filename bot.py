@@ -1220,9 +1220,11 @@ def handle_image_message(event):
 
     fname = event.message.id + '_' + datetime.now().strftime("%Y%m%d%H%M%S") + '.jpg'
     save_content(event.message.id, 'static/' + fname)
-    aws.set_receipt2(fname)
-    udb[_id]['image_url'] = base_url + '/static/' + fname
+    image_url = aws.set_receipt2(fname)
+    # udb[_id]['image_url'] = base_url + '/static/' + fname
+    udb[_id]['image_url'] = image_url
     udb[_id]['image'] = fname
+
 
     if status == 'input_amount_by_image':
         receipt_amount = vision.get_receipt_amount('static/' + fname)
