@@ -1092,15 +1092,15 @@ def handle_text_message(event):
                     db.add_payment(gid, _id, udb[_id]["amount"], udb[_id].get("use"), udb[_id].get("image_url"))
                     print udb[_id].get("image_url")
 
-                    push_msgs = []
-                    name = get_name(_id)
-                    if "use" in udb[_id]:
-                        push_msgs.append(TextSendMessage(text = u'{}さんが{}に{}円支払いました'.format(name, udb[_id].get("use"), get_commad_number_str(udb[_id]["amount"]))))
-                    else:
-                        push_msgs.append(TextSendMessage(text = u'{}さんが{}円支払いました'.format(name, get_commad_number_str(udb[_id]["amount"]))))
-                    if "image_url" in udb[_id]:
-                        push_msgs.append(ImageSendMessage(original_content_url = udb[_id]["image_url"], preview_image_url = udb[_id]["image_url"]))
-                    line_bot_api.push_message(gid, push_msgs)
+                    # push_msgs = []
+                    # name = get_name(_id)
+                    # if "use" in udb[_id]:
+                    #     push_msgs.append(TextSendMessage(text = u'{}さんが{}に{}円支払いました'.format(name, udb[_id].get("use"), get_commad_number_str(udb[_id]["amount"]))))
+                    # else:
+                    #     push_msgs.append(TextSendMessage(text = u'{}さんが{}円支払いました'.format(name, get_commad_number_str(udb[_id]["amount"]))))
+                    # if "image_url" in udb[_id]:
+                    #     push_msgs.append(ImageSendMessage(original_content_url = udb[_id]["image_url"], preview_image_url = udb[_id]["image_url"]))
+                    # line_bot_api.push_message(gid, push_msgs)
 
                 del_flag = True
                 #del udb[_id]
@@ -1223,6 +1223,7 @@ def handle_image_message(event):
     save_content(event.message.id, 'static/' + fname)
     image_url = aws.set_receipt2(fname)
     # udb[_id]['image_url'] = base_url + '/static/' + fname
+    print image_url
     udb[_id]['image_url'] = image_url
     udb[_id]['image'] = fname
 
@@ -1265,6 +1266,7 @@ def handle_image_message(event):
 
     db.update_status_info(_id, udb[_id])
     send_msgs(reply_msgs, reply_token = event.reply_token)
+    print udb[_id]['image_url']
 
 @handler.add(MessageEvent, message=VideoMessage)
 def handle_video_message(event):
