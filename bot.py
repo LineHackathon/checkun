@@ -413,7 +413,7 @@ def auth_callback():
         errorMessage = request.args.get('errorMessage')
         print error
         print errorCode
-        print errorMessage
+        # print errorMessage
         return 'Auth Error'
 
     print 'Auth callback: ' + state + ', ' + code
@@ -1424,6 +1424,8 @@ def handle_postback_event(event):
         else:
             gid = groups[0]
             payments = db.get_group_payments(gid)
+            if len(payments) == 0:
+                reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
             # print payments
             page = data.get('page', 0)
             page_max = (len(payments) - 1) / 2 - 1
