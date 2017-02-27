@@ -115,6 +115,10 @@ def set_file(key, file_path):
     obj = bucket.Object(key)
     obj.Acl().put(ACL='public-read')
 
+    print aws_s3_bucket_name
+    print key
+    print 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
+
     return 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
 
 
