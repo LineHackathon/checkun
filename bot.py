@@ -1469,10 +1469,9 @@ def handle_postback_event(event):
                 if page == page_max:
                     if page == 0:
                         start = 0
-                        end = len(payments)
                     else:
                         start = page * 2 + 1
-                        end = len(payments)
+                    end = len(payments)
                 else:
                     add_next = True
                     if page == 0:
