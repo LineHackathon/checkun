@@ -342,9 +342,6 @@ def delete_settlement_user_from_group(gid, uid):
 
         update_db()
 
-def get_groups_payments(gid):
-    return payment_table.search(Query().gid == gid)
-
 #usersではなくsettlement_usersから?userが所属するすべてのgroupの支払い一覧を返す?
 def get_user_groups_payments(uid):
     ''' table(group)のusersにuidが含まれるグループのpaymentsをリストで渡す '''

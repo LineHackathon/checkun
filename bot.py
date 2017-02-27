@@ -1422,7 +1422,7 @@ def handle_postback_event(event):
             if len(groups) > 1:
                 text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
 
-            payments = db.get_groups_payments(gid)
+            payments = db.get_group_payments(gid)
             totals = {}
             for payment in payments:
                 uid = payment["payment_uid"]
@@ -1982,7 +1982,7 @@ def handle_postback_event(event):
             if len(groups) > 1:
                 text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
 
-            payments = db.get_groups_payments(gid)
+            payments = db.get_group_payments(gid)
             if len(payments) == 0:
                 text += u'支払の記録はありません\n'
             for payment in payments:
@@ -2019,7 +2019,7 @@ def handle_postback_event(event):
             ginfo = db.get_group_info(gid)
             if len(groups) > 1:
                 text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
-            payments = db.get_groups_payments(gid)
+            payments = db.get_group_payments(gid)
             totals = {}
             for payment in payments:
                 _id = payment["payment_uid"]
