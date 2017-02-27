@@ -1452,7 +1452,9 @@ def handle_postback_event(event):
             reply_msgs.append(TextSendMessage(text = text))
         else:
             gid = groups[0]
+            print gid
             payments = db.get_group_payments(gid)
+            print len(payments)
             # print payments
             if len(payments) == 0:
                 reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
