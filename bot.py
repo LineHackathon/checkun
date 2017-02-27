@@ -610,7 +610,7 @@ def handle_text_message(event):
                             reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
                         else:
                             udb[_id]['status'] = 'input_use'
-                            reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えて(ex.レンタカー代)'.format(amount=get_commad_number_str(amount))))
+                            reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えてね(ex.レンタカー代)※10文字まで'.format(amount=get_commad_number_str(amount))))
                     else:
                         amount = udb[_id].get('amount', 0)
                         if amount < 1:
@@ -871,7 +871,7 @@ def handle_text_message(event):
                     if status == 'input_amount':
                         udb[_id]['amount'] = amount
                         udb[_id]['status'] = 'input_use'
-                        reply_msgs.append(TextSendMessage(text = u'何の金額か教えて(ex.レンタカー代)'))
+                        reply_msgs.append(TextSendMessage(text = u'何の金額か教えてね(ex.レンタカー代)※10文字まで'))
                     else:
                         db.update_payment(udb[_id]['eid'], amount = amount)
                         reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
@@ -881,30 +881,36 @@ def handle_text_message(event):
                 reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
 
         elif status == 'input_use':
-            udb[_id]['use'] = event.message.text
-            reply_msgs.append(TemplateSendMessage(
-                alt_text='登録確認',
-                template=ButtonsTemplate(
-                    thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'登録確認',
-                    text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount'])),
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'OK',
-                            text=u'OK',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'訂正する',
-                            text=u'訂正する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-            udb[_id]['status'] = 'ask_photo_addition'
+            text = event.message.text
+            if len(text) > 10:
+                reply_msgs.append(TextSendMessage(text = u'入力できるのは10文字までだよ'))
+                reply_msgs.append(TextSendMessage(text = u'何の金額か教えてね(ex.レンタカー代)※10文字まで'))
+
+            else:
+                udb[_id]['use'] = text
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text='登録確認',
+                    template=ButtonsTemplate(
+                        thumbnail_image_url=udb[_id].get('image_url', None),
+                        # title=u'登録確認',
+                        text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount'])),
+                        actions=[
+                            MessageTemplateAction(
+                            # PostbackTemplateAction(
+                                label=u'OK',
+                                text=u'OK',
+                                # data=json.dumps({'cmd': 'input_amount_by_image'})
+                            ),
+                            MessageTemplateAction(
+                            # PostbackTemplateAction(
+                                label=u'訂正する',
+                                text=u'訂正する',
+                                # data=json.dumps({'cmd': 'input_amount_by_image'})
+                            ),
+                        ]
+                    )
+                ))
+                udb[_id]['status'] = 'ask_photo_addition'
 
         elif status == 'modify_payment_description':
             description = event.message.text
@@ -1001,7 +1007,7 @@ def handle_text_message(event):
                 reply_msgs.append(TextSendMessage(text = u'金額を入力してね(1~999,999)'))
                 udb[_id]['status'] = 'modify_amount'
             if event.message.text == u'支払項目':
-                reply_msgs.append(TextSendMessage(text = u'何の金額か教えて(ex.レンタカー代)'))
+                reply_msgs.append(TextSendMessage(text = u'何の金額か教えてね(ex.レンタカー代)※10文字まで'))
                 udb[_id]['status'] = 'modify_use'
             if event.message.text == u'写真':
                 reply_msgs.append(TextSendMessage(text = u'写真を撮るか、写真を選択してね'))
@@ -1045,30 +1051,35 @@ def handle_text_message(event):
 
 
         elif status == 'modify_use':
-            udb[_id]['use'] = event.message.text
-            reply_msgs.append(TemplateSendMessage(
-                alt_text='登録確認',
-                template=ButtonsTemplate(
-                    thumbnail_image_url=udb[_id].get('image_url', None),
-                    # title=u'登録確認',
-                    text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount'])),
-                    actions=[
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'OK',
-                            text=u'OK',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                        MessageTemplateAction(
-                        # PostbackTemplateAction(
-                            label=u'訂正する',
-                            text=u'訂正する',
-                            # data=json.dumps({'cmd': 'input_amount_by_image'})
-                        ),
-                    ]
-                )
-            ))
-            udb[_id]['status'] = 'confirm_modify'
+            text = event.message.text
+            if len(text) > 10:
+                reply_msgs.append(TextSendMessage(text = u'入力できるのは10文字までだよ'))
+                reply_msgs.append(TextSendMessage(text = u'何の金額か教えてね(ex.レンタカー代)※10文字まで'))
+            else:
+                udb[_id]['use'] = text
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text='登録確認',
+                    template=ButtonsTemplate(
+                        thumbnail_image_url=udb[_id].get('image_url', None),
+                        # title=u'登録確認',
+                        text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount'])),
+                        actions=[
+                            MessageTemplateAction(
+                            # PostbackTemplateAction(
+                                label=u'OK',
+                                text=u'OK',
+                                # data=json.dumps({'cmd': 'input_amount_by_image'})
+                            ),
+                            MessageTemplateAction(
+                            # PostbackTemplateAction(
+                                label=u'訂正する',
+                                text=u'訂正する',
+                                # data=json.dumps({'cmd': 'input_amount_by_image'})
+                            ),
+                        ]
+                    )
+                ))
+                udb[_id]['status'] = 'confirm_modify'
 
         elif status == 'confirm_modify':
             if event.message.text == u'OK':
