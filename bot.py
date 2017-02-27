@@ -595,6 +595,7 @@ def handle_text_message(event):
                     )
                 ))
         elif cmd[0:2] == u'電卓':
+            new_amount = 0
             if len(cmd[2:]) == 1:
                 if cmd[2] == 'E':
                     try:
@@ -603,26 +604,40 @@ def handle_text_message(event):
                         status = 'none'
                     print status
                     if status == 'input_amount':
-                        udb[_id]['status'] = 'input_use'
-                        reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えて(ex.レンタカー代)'.format(amount=get_commad_number_str(udb[_id].get('amount', 0)))))
+                        amount = udb[_id].get('amount', 0)
+                        if amount < 1:
+                            reply_msgs.append(make_calc_message())
+                            reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
+                        else:
+                            udb[_id]['status'] = 'input_use'
+                            reply_msgs.append(TextSendMessage(text = u'{amount}円だね\n何の金額か教えて(ex.レンタカー代)'.format(amount=get_commad_number_str(amount))))
                     else:
                         amount = udb[_id].get('amount', 0)
-                        db.update_payment(udb[_id]['eid'], amount = amount)
-                        reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
+                        if amount < 1:
+                            reply_msgs.append(make_calc_message())
+                            reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
+                        else:
+                            db.update_payment(udb[_id]['eid'], amount = amount)
+                            reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
 
                 elif cmd[2] == 'C':
-                    udb[_id]['amount'] = 0
+                    new_amount = 0
                 else:
                     n = int(cmd[2])
-                    udb[_id]['amount'] = udb[_id].get('amount', 0) * 10 + n
+                    new_amount = udb[_id].get('amount', 0) * 10 + n
 
             elif len(cmd[2:]) == 2:
-                udb[_id]['amount'] = udb[_id].get('amount', 0) * 100
+                new_amount = udb[_id].get('amount', 0) * 100
             elif len(cmd[2:]) == 3:
-                udb[_id]['amount'] = udb[_id].get('amount', 0) * 1000
+                new_amount = udb[_id].get('amount', 0) * 1000
 
             if cmd[2] != 'E':
                 reply_msgs.append(make_calc_message())
+                if new_amount > 999999:
+                    reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
+                else:
+                    udb[_id]['amount'] = new_amount
+
                 reply_msgs.append(TextSendMessage(text = u'{amount}円 これで良ければEnterボタンを押してね'.format(amount=get_commad_number_str(udb[_id]['amount']))))
 
         elif cmd == u'確認':
