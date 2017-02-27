@@ -1514,11 +1514,7 @@ def handle_postback_event(event):
                 ))
     elif cmd == 'modify_payment':
         eid = data['eid']
-        print eid
         payment = db.get_payment(eid)
-        print payment['payment_uid']
-        print payment['description']
-        print payment['amount']
         reply_msgs.append(TextSendMessage(text = payment['description']))
         text = u'{}さんが{}で{}円支払いました\n'.format(get_name(payment['payment_uid']), payment['description'], get_commad_number_str(payment['amount']))
         text += u'この支払に対する支払対象者は次の通りです\n'
@@ -1552,9 +1548,6 @@ def handle_postback_event(event):
                 ]
             )
         ))
-        print payment['payment_uid']
-        print payment['description']
-        print payment['amount']
 
     elif cmd == 'modify_payment_cancel':
         reply_msgs.append(TextSendMessage(text = u'支払操作をキャンセルしました'))
