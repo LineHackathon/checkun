@@ -387,8 +387,8 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
                         })
 
     #save receipt to user folder in S3
-    if receipt is not None:
-        update_receipt(gid, payment_uid, receipt)
+    # if receipt is not None:
+    #     update_receipt(gid, payment_uid, receipt)
         # pass
 
     update_db()
