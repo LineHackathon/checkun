@@ -79,6 +79,11 @@ def set_receipt(gid, uid, file_name):
 	key = 'groups' + '/' + gid + '/' + uid + '_' + file_name
 	set_file(key, file_path)
 
+def set_receipt2(file_name):
+	file_path = 'static/' + file_name
+	key = 'receipt/' + file_name
+	set_file(key, file_path)
+
 #get file and save to /static/file_name
 def get_receipt(gid, uid, file_name):
 	file_path = 'static' + '/' + file_name
@@ -102,7 +107,7 @@ def set_file(key, file_path):
 	# Upload a new file
 	data = open(file_path, 'rb')
 	bucket.put_object(Key=key, Body=data)
-	
+
 
 def get_file(key, file_path):
 	s3 = boto3.resource('s3')

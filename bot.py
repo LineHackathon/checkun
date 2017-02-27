@@ -1217,16 +1217,19 @@ def handle_image_message(event):
         status = 'none'
     print status
 
-    if status in ['add_photo', 'modify_photo']:
-        fname = event.message.id + '_' + datetime.now().strftime("%Y%m%d%H%M%S") + '.jpg'
-        save_content(event.message.id, 'static/' + fname)
-        udb[_id]['image_url'] = base_url + '/static/' + fname
-        udb[_id]['image'] = fname
+    fname = event.message.id + '_' + datetime.now().strftime("%Y%m%d%H%M%S") + '.jpg'
+    save_content(event.message.id, 'static/' + fname)
+    aws.set_receipt2(fname)
+    udb[_id]['image_url'] = base_url + '/static/' + fname
+    udb[_id]['image'] = fname
+
+    if status == 'input_amount_by_image':
         receipt_amount = vision.get_receipt_amount('static/' + fname)
         print(receipt_amount)
+        udb[_id]['amount'] = int(receipt_amount)
 
+    if status in ['add_photo', 'modify_photo', 'input_amount_by_image']:
         if udb[_id].get("use") is None:
-            udb[_id]['amount'] = int(receipt_amount)
             thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = get_commad_number_str(udb[_id]['amount']))
         else:
             thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
@@ -1397,7 +1400,7 @@ def handle_postback_event(event):
         reply_msgs.append(make_calc_message())
     elif cmd == 'input_amount_by_image':
         #udb[_id] = {'status': 'input_amount'}
-        udb[_id]['status'] = 'add_photo'
+        udb[_id]['status'] = 'input_amount_by_image'
         reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
         #reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
 
