@@ -1551,6 +1551,9 @@ def handle_postback_event(event):
                 ]
             )
         ))
+        print payment['payment_uid']
+        print payment['description']
+        print payment['amount']
 
     elif cmd == 'modify_payment_cancel':
         reply_msgs.append(TextSendMessage(text = u'支払操作をキャンセルしました'))
