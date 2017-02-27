@@ -82,7 +82,7 @@ def set_receipt(gid, uid, file_name):
 def set_receipt2(file_name):
     file_path = 'static/' + file_name
     key = 'receipt/' + file_name
-    set_file(key, file_path)
+    return set_file(key, file_path)
 
 #get file and save to /static/file_name
 def get_receipt(gid, uid, file_name):
@@ -99,10 +99,6 @@ def delete_receipt(gid, uid, file_name):
 def set_file(key, file_path):
     s3 = boto3.resource('s3')
 
-    print aws_s3_bucket_name
-    print file_path
-    print key
-
     bucket = s3.Bucket(aws_s3_bucket_name)
     #print(bucket.name)
     #print(bucket.objects.all())
@@ -114,14 +110,6 @@ def set_file(key, file_path):
 
     obj = bucket.Object(key)
     obj.Acl().put(ACL='public-read')
-
-    print aws_s3_bucket_name
-    print key
-
-    img_url =  'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
-    print 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
-    print img_url
-    return img_url
 
     return 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
 

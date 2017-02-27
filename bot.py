@@ -1223,7 +1223,6 @@ def handle_image_message(event):
     save_content(event.message.id, 'static/' + fname)
     image_url = aws.set_receipt2(fname)
     # udb[_id]['image_url'] = base_url + '/static/' + fname
-    print image_url
     udb[_id]['image_url'] = image_url
     udb[_id]['image'] = fname
 
