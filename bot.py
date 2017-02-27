@@ -1224,10 +1224,10 @@ def handle_image_message(event):
         udb[_id]['image'] = fname
         receipt_amount = vision.get_receipt_amount('static/' + fname)
         print(receipt_amount)
-        udb[_id]['amount'] = int(receipt_amount)
 
-        thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = receipt_amount)
+        thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = udb[_id]['amount'])
         if udb[_id].get("use") is None:
+            udb[_id]['amount'] = int(receipt_amount)
             thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = receipt_amount)
 
         reply_msgs.append(TemplateSendMessage(
