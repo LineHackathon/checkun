@@ -121,6 +121,7 @@ def set_file(key, file_path):
     img_url =  'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
     print 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
     print img_url
+    return img_url
 
     return 'https://s3-us-west-2.amazonaws.com/{}/{}'.format(aws_s3_bucket_name, key)
 
