@@ -2038,42 +2038,44 @@ def handle_postback_event(event):
     elif cmd == 'check_start_no':
         reply_msgs.append(TextSendMessage(text = u'精算処理を中止しました'))
     elif cmd == 'check_report':
-        reply_msgs.append(TemplateSendMessage(
-            alt_text=u'精算報告',
-            template=ButtonsTemplate(
-                # thumbnail_image_url=udb[_id].get('image_url', None),
-                title=u'精算報告',
-                text = u'『対象ユーザ』さんに『未精算金額』円払払いました か? or『対象ユーザ』さんに『未精算金額』円もらいました',
-                actions=[
-                    PostbackTemplateAction(
-                        label=u'完了した',
-                        # text=cmd_prefix + u'精算完了',
-                        data=json.dumps({'cmd': 'check_finished'})
-                    ),
-                    PostbackTemplateAction(
-                        label=u'まだしてない',
-                        # text=cmd_prefix + u'精算まだ',
-                        data=json.dumps({'cmd': 'check_not_finished'})
-                    ),
-                ]
-            )
-        ))
+        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+        # reply_msgs.append(TemplateSendMessage(
+        #     alt_text=u'精算報告',
+        #     template=ButtonsTemplate(
+        #         # thumbnail_image_url=udb[_id].get('image_url', None),
+        #         title=u'精算報告',
+        #         text = u'『対象ユーザ』さんに『未精算金額』円払いましたか？ or『対象ユーザ』さんに『未精算金額』円もらいました',
+        #         actions=[
+        #             PostbackTemplateAction(
+        #                 label=u'完了した',
+        #                 # text=cmd_prefix + u'精算完了',
+        #                 data=json.dumps({'cmd': 'check_finished'})
+        #             ),
+        #             PostbackTemplateAction(
+        #                 label=u'まだしてない',
+        #                 # text=cmd_prefix + u'精算まだ',
+        #                 data=json.dumps({'cmd': 'check_not_finished'})
+        #             ),
+        #         ]
+        #     )
+        # ))
     elif cmd == 'check_finished':
         reply_msgs.append(TextSendMessage(text = u'ありがとうございます!『対象ユーザ』さんに確認します!'))
         reply_msgs.append(TextSendMessage(text = u'『対象ユーザ』さんに確認しました!あなたの精算は完了です！ or 『対象ユーザ』さんの確認が取れませんでした。再度精算をしてから報告してください。'))
     elif cmd == 'check_not_finished':
         reply_msgs.append(TextSendMessage(text = u'早く払ってください!! or 早くもらってください!!'))
     elif cmd == 'check_status':
-        reply_msgs.append(TextSendMessage(text = u'''現在の精算結果をお知らせします
-【精算済】『対象ユーザ』さん →『対象ユーザ』さ
-ん:『未精算金額』円
-『対象ユーザ』さん →『対象ユーザ』さん:『未精算
-金額』円
-・
-・
-・
-【精算済】『対象ユーザ』さん →『対象ユーザ』さ
-ん:『未精算金額』円'''))
+        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+#         reply_msgs.append(TextSendMessage(text = u'''現在の精算結果をお知らせします
+# 【精算済】『対象ユーザ』さん →『対象ユーザ』さ
+# ん:『未精算金額』円
+# 『対象ユーザ』さん →『対象ユーザ』さん:『未精算
+# 金額』円
+# ・
+# ・
+# ・
+# 【精算済】『対象ユーザ』さん →『対象ユーザ』さ
+# ん:『未精算金額』円'''))
 
     elif cmd == 'set_round':
         if value is None:
@@ -2323,26 +2325,28 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text))
 
     elif cmd == 'set_accountant':
-        reply_msgs.append(TemplateSendMessage(
-            alt_text=u'会計係の設定',
-            template=ButtonsTemplate(
-                # thumbnail_image_url=udb[_id].get('image_url', None),
-                # title=u'会計係の設定',
-                text = u'企業や団体の経費立替係を入れる場合に設定します。',
-                actions=[
-                    PostbackTemplateAction(
-                        label=u'設定する',
-                        # text=cmd_prefix + u'会計係設定する',
-                        data=json.dumps({'cmd': 'set_accountant_yes'})
-                    ),
-                    PostbackTemplateAction(
-                        label=u'設定しない',
-                        # text=cmd_prefix + u'会計係設定しない',
-                        data=json.dumps({'cmd': 'set_accountant_no'})
-                    ),
-                ]
-            )
-        ))
+        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+
+        # reply_msgs.append(TemplateSendMessage(
+        #     alt_text=u'会計係の設定',
+        #     template=ButtonsTemplate(
+        #         # thumbnail_image_url=udb[_id].get('image_url', None),
+        #         # title=u'会計係の設定',
+        #         text = u'企業や団体の経費立替係を入れる場合に設定します。',
+        #         actions=[
+        #             PostbackTemplateAction(
+        #                 label=u'設定する',
+        #                 # text=cmd_prefix + u'会計係設定する',
+        #                 data=json.dumps({'cmd': 'set_accountant_yes'})
+        #             ),
+        #             PostbackTemplateAction(
+        #                 label=u'設定しない',
+        #                 # text=cmd_prefix + u'会計係設定しない',
+        #                 data=json.dumps({'cmd': 'set_accountant_no'})
+        #             ),
+        #         ]
+        #     )
+        # ))
     elif cmd == 'set_accountant_yes':
         reply_msgs.append(TextSendMessage(text = u'会計係設定しました'))
     elif cmd == 'set_accountant_no':
@@ -2388,26 +2392,27 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
 
     elif cmd == 'initialize':
-        reply_msgs.append(TemplateSendMessage(
-            alt_text=u'初期化',
-            template=ButtonsTemplate(
-                # thumbnail_image_url=udb[_id].get('image_url', None),
-                # title=u'初期化',
-                text = u'全ての設定を初期化します。よろしいですか？',
-                actions=[
-                    PostbackTemplateAction(
-                        label=u'はい',
-                        # text=cmd_prefix + u'初期化する',
-                        data=json.dumps({'cmd': 'initialize_yes'})
-                    ),
-                    PostbackTemplateAction(
-                        label=u'いいえ',
-                        # text=cmd_prefix + u'初期化しない',
-                        data=json.dumps({'cmd': 'initialize_no'})
-                    ),
-                ]
-            )
-        ))
+        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+        # reply_msgs.append(TemplateSendMessage(
+        #     alt_text=u'初期化',
+        #     template=ButtonsTemplate(
+        #         # thumbnail_image_url=udb[_id].get('image_url', None),
+        #         # title=u'初期化',
+        #         text = u'全ての設定を初期化します。よろしいですか？',
+        #         actions=[
+        #             PostbackTemplateAction(
+        #                 label=u'はい',
+        #                 # text=cmd_prefix + u'初期化する',
+        #                 data=json.dumps({'cmd': 'initialize_yes'})
+        #             ),
+        #             PostbackTemplateAction(
+        #                 label=u'いいえ',
+        #                 # text=cmd_prefix + u'初期化しない',
+        #                 data=json.dumps({'cmd': 'initialize_no'})
+        #             ),
+        #         ]
+        #     )
+        # ))
     elif cmd == 'initialize_yes':
         reply_msgs.append(TextSendMessage(text = u'初期化しました'))
     elif cmd == 'initialize_no':
