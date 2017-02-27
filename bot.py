@@ -864,7 +864,6 @@ def handle_text_message(event):
         if status in ['input_amount', 'modify_payment_amount']:
             if event.message.text.isdigit():
                 amount = int(event.message.text)
-                print amount
                 if (amount < 1) | (amount > 999999):
                     reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
 
@@ -879,7 +878,7 @@ def handle_text_message(event):
 
 
             else:
-                reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
+                reply_msgs.append(TextSendMessage(text = u'数字だけで入力してね'))
 
         elif status == 'input_use':
             text = event.message.text
