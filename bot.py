@@ -1089,7 +1089,7 @@ def handle_text_message(event):
                 groups = db.get_user_groups(_id)
                 for gid in groups:
                     #db.add_payment(gid, _id, udb[_id]["amount"], udb[_id].get("use"), udb[_id].get("image_url"))
-                    db.add_payment(gid, _id, udb[_id]["amount"], udb[_id].get("use"), udb[_id].get("image"))
+                    db.add_payment(gid, _id, udb[_id]["amount"], udb[_id].get("use"), udb[_id].get("image_url"))
 
                     msgs = []
                     name = get_name(_id)
