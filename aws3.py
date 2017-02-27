@@ -99,6 +99,10 @@ def delete_receipt(gid, uid, file_name):
 def set_file(key, file_path):
 	s3 = boto3.resource('s3')
 
+    print aws_s3_bucket_name
+    print file_path
+    print key
+
 	bucket = s3.Bucket(aws_s3_bucket_name)
 	#print(bucket.name)
 	#print(bucket.objects.all())
