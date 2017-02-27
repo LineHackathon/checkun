@@ -1384,6 +1384,8 @@ def handle_postback_event(event):
     value = data.get('value')
     reply_msgs = []
 
+    print cmd
+
     if False:
         pass
     elif cmd == 'input_amount_by_number':
