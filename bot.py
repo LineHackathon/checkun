@@ -473,8 +473,8 @@ def callback():
 
 def print_error(e):
     print(e.status_code)
-    print(e.error.message)
-    print(e.error.details)
+    # print(e.error.message)
+    # print(e.error.details)
 
 @handler.default()
 def default(event):
@@ -1424,62 +1424,63 @@ def handle_postback_event(event):
         else:
             gid = groups[0]
             payments = db.get_group_payments(gid)
+            # print payments
             if len(payments) == 0:
                 reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
-            # print payments
-            page = data.get('page', 0)
-            page_max = (len(payments) - 1) / 2 - 1
-            if page_max < 0:
-                page_max = 0
-
-            actions = []
-            add_next = False
-            if page == page_max:
-                if page == 0:
-                    start = 0
-                    end = len(payments)
-                else:
-                    start = page * 2 + 1
-                    end = len(payments)
             else:
-                add_next = True
-                if page == 0:
-                    start = 0
-                    end = start + 3
+                page = data.get('page', 0)
+                page_max = (len(payments) - 1) / 2 - 1
+                if page_max < 0:
+                    page_max = 0
+
+                actions = []
+                add_next = False
+                if page == page_max:
+                    if page == 0:
+                        start = 0
+                        end = len(payments)
+                    else:
+                        start = page * 2 + 1
+                        end = len(payments)
                 else:
-                    start = page * 2 + 1
-                    end = start + 2
+                    add_next = True
+                    if page == 0:
+                        start = 0
+                        end = start + 3
+                    else:
+                        start = page * 2 + 1
+                        end = start + 2
+                        actions.append(
+                            PostbackTemplateAction(
+                                label=u'前のページ',
+                                data=json.dumps({'cmd': cmd, 'page': page - 1})
+                            )
+                        )
+                for payment in payments[start:end]:
+                    label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     actions.append(
                         PostbackTemplateAction(
-                            label=u'前のページ',
-                            data=json.dumps({'cmd': cmd, 'page': page - 1})
+                            label=label,
+                            data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
                         )
                     )
-            for payment in payments[start:end]:
-                label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
-                actions.append(
-                    PostbackTemplateAction(
-                        label=label,
-                        data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
+                if add_next:
+                    actions.append(
+                        PostbackTemplateAction(
+                            label=u'次のページ',
+                            data=json.dumps({'cmd': cmd, 'page': page + 1})
+                        )
                     )
-                )
-            if add_next:
-                actions.append(
-                    PostbackTemplateAction(
-                        label=u'次のページ',
-                        data=json.dumps({'cmd': cmd, 'page': page + 1})
-                    )
-                )
 
-            reply_msgs.append(TemplateSendMessage(
-                alt_text=u'支払一覧',
-                template=ButtonsTemplate(
-                    # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'支払一覧',
-                    text = u'変更したい支払を選んでください',
-                    actions = actions,
-                )
-            ))
+                reply_msgs.append(TemplateSendMessage(
+                    alt_text=u'支払一覧',
+                    template=ButtonsTemplate(
+                        # thumbnail_image_url=udb[_id].get('image_url', None),
+                        title=u'支払一覧',
+                        text = u'変更したい支払を選んでください',
+                        actions = actions,
+                    )
+                ))
     elif cmd == 'modify_payment':
         eid = data['eid']
         payment = db.get_payment(eid)
