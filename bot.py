@@ -83,6 +83,7 @@ owner_uids = [
     'Uac9f94f806d1a634014857766178d4d5',
     'U28f3f359bef7c78ddd6a4db797949d50',
     'Ua482f41a31d2c8863ea4b614e6a6f98b',
+    'Ua6bfcc9810c757ccdd3a6365e4ce59ea',
 ]
 
 def line_login_get_access_token(code):
