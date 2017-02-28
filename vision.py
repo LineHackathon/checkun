@@ -4,6 +4,7 @@
 import os
 import base64
 import json
+from datetime import datetime
 from requests import Request, Session
 
 try:
@@ -82,6 +83,11 @@ def extract_amount(receipt_text):
 
 	return total_amount
 
+def analayze_use(receipt_text):
+    #とりあえず日時を返す。
+    #todo:
+    return 'receipt<' + datetime.now().strftime("%m%d%H%M") + '>'
+
 def strip_char(text, c):
 	strip_text = ''
 
@@ -145,11 +151,12 @@ def get_receipt_amount(str_image_path):
 
     #receipt_text = recognize_receipt('static/S__25034777.jpg')
     receipt_text = recognize_receipt(str_image_path)
+    use = analayze_use(receipt_text)
     amount = extract_amount(receipt_text)
     if amount is None:
         amount = 0
 
-    return amount
+    return (use, amount)
  
 if __name__ == '__main__':
 	#extract_amount(test_text)
@@ -162,4 +169,8 @@ if __name__ == '__main__':
 
 	#receipt_text = recognize_receipt('static/5648165471052.jpg')
 	#extract_amount(receipt_text)
+    
+    #amount_use, receipt_amount = get_receipt_amount('static/receipt.jpg')
+    #print(amount_use)
+    #print(receipt_amount)
 	pass

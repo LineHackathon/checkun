@@ -125,7 +125,7 @@ def line_login_get_user_profiles(token):
 def get_commad_number_str(number):
     return(u'{:,d}'.format(number))
 
-@app.route('/')
+@app.route('/all')
 def get_all():
     print('/')
     users = db.get_users()
@@ -1242,15 +1242,14 @@ def handle_image_message(event):
 
 
     if status == 'input_amount_by_image':
-        receipt_amount = vision.get_receipt_amount('static/' + fname)
+        amount_use, receipt_amount = vision.get_receipt_amount('static/' + fname)
+        print(amount_use)
         print(receipt_amount)
+        udb[_id]['use'] = amount_use
         udb[_id]['amount'] = int(receipt_amount)
 
     if status in ['add_photo', 'modify_photo', 'input_amount_by_image']:
-        if udb[_id].get("use") is None:
-            thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = get_commad_number_str(udb[_id]['amount']))
-        else:
-            thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
+        thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
 
         reply_msgs.append(TemplateSendMessage(
             alt_text='登録確認',
