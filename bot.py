@@ -1163,10 +1163,9 @@ def handle_text_message(event):
             text = u'{}({})さんより要望・バグ報告がありました\n'.format(get_name(_id), _id)
             text += event.message.text
             send_msgs(TextSendMessage(text), uids = owner_uids)
+            udb[_id] = {}
+            reply_msgs.append(TextSendMessage(u'連絡どうもありがとう'))
 
-            if event.message.text == u'おわり':
-                udb[_id] = {}
-                reply_msgs.append(TextSendMessage(u'連絡どうもありがとう'))
         if(event.message.text == u'バイバイ'):
             # del_warikan_group(event.source)
             line_bot_api.reply_message(
@@ -2473,7 +2472,7 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'初期化を中止しました'))
 
     elif cmd == 'bug_report':
-        reply_msgs.append(TextSendMessage(text = u'中の人に伝えるのでメッセージを書き込んでね．終わったら「おわり」と入力してね．'))
+        reply_msgs.append(TextSendMessage(text = u'中の人に伝えるのでメッセージを書き込んでね。'))
         udb[_id] = {'status': 'bug_report'}
         # reply_msgs.append(TextSendMessage(text = u'以下のリンクからお問い合わせください\n{}'.format(checkun_url)))
 
