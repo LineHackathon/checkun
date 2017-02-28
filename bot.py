@@ -1514,7 +1514,7 @@ def handle_postback_event(event):
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'支払一覧',
                     template=ButtonsTemplate(
-                        thumbnail_image_url=udb[_id].get('image_url', None),
+                        # thumbnail_image_url=udb[_id].get('image_url', None),
                         title=u'支払一覧',
                         text = u'変更したい支払を選んでください',
                         actions = actions,
@@ -1533,7 +1533,7 @@ def handle_postback_event(event):
         reply_msgs.append(TemplateSendMessage(
             alt_text=u'支払操作',
             template=ButtonsTemplate(
-                # thumbnail_image_url=payment.get('receipt'),
+                thumbnail_image_url=payment.get('receipt'),
                 title=u'支払操作',
                 text=u'この支払に対して操作しますか？',
                 actions=[
