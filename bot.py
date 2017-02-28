@@ -76,7 +76,7 @@ cmd_prefix = u'▶'
 # db.init('checkundb.json')
 #udb = {}
 
-checkun_url = 'http://checkun.hippy.jp/'
+checkun_url = 'http://checkun.accountant/'
 # sys.exit(0)
 
 def line_login_get_access_token(code):
@@ -2393,7 +2393,7 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'会計係設定を解除しました'))
 
     elif cmd == 'help':
-        reply_msgs.append(TextSendMessage(text = u'以下のリンクを見てみてね\nhttp://checkun.hippy.jp/#sec04'))
+        reply_msgs.append(TextSendMessage(text = u'以下のリンクを見てみてね\nhttp://checkun.accountant/#sec04'))
 
     elif cmd == 'byebye':
         reply_msgs.append(TextSendMessage(text = u'グループに確認メッセージを送ったよ'))
