@@ -1160,13 +1160,13 @@ def handle_text_message(event):
                 reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜99だよ'))
 
         elif status == 'bug_report':
-            text = u'{}さんより要望・バグ報告がありました\n'.format(get_name(_id))
+            text = u'{}({})さんより要望・バグ報告がありました\n'.format(get_name(_id), _id)
             text += event.message.text
             send_msgs(TextSendMessage(text), uids = owner_uids)
 
             if event.message.text == u'おわり':
                 udb[_id] = {}
-                reply_.append(TextSendMessage(u'連絡どうもありがとう'))
+                reply_msgs.append(TextSendMessage(u'連絡どうもありがとう'))
         if(event.message.text == u'バイバイ'):
             # del_warikan_group(event.source)
             line_bot_api.reply_message(
