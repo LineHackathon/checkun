@@ -79,6 +79,12 @@ cmd_prefix = u'▶'
 checkun_url = 'http://checkun.accountant/'
 # sys.exit(0)
 
+owner_uids = [
+    'Uac9f94f806d1a634014857766178d4d5',
+    'U28f3f359bef7c78ddd6a4db797949d50',
+    'Ua482f41a31d2c8863ea4b614e6a6f98b',
+]
+
 def line_login_get_access_token(code):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = {
@@ -775,7 +781,7 @@ def handle_text_message(event):
                                     PostbackTemplateAction(
                                         label=u'改善要望・バグ報告',
                                         # text=cmd_prefix + u'改善要望・バグ報告',
-                                        data=json.dumps({'cmd': 'report'})
+                                        data=json.dumps({'cmd': 'bug_report'})
                                     ),
                                     PostbackTemplateAction(
                                         label=u'Checkunの解除',
@@ -1153,6 +1159,13 @@ def handle_text_message(event):
             else:
                 reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜99だよ'))
 
+        elif status == 'bug_report':
+            text = u'{}さんより要望・バグ報告がありました\n'.format(get_name(_id))
+            text += event.message.text
+            send_msgs(text, uids = owner_uids)
+
+            if event.message.text == u'おわり':
+                udb[_id] = {}
         if(event.message.text == u'バイバイ'):
             # del_warikan_group(event.source)
             line_bot_api.reply_message(
@@ -2458,9 +2471,10 @@ def handle_postback_event(event):
     elif cmd == 'initialize_no':
         reply_msgs.append(TextSendMessage(text = u'初期化を中止しました'))
 
-    elif cmd == 'report':
-        reply_msgs.append(TextSendMessage(text = u'''以下のリンクからお問い合わせください
-{}'''.format(checkun_url)))
+    elif cmd == 'bug_report':
+        reply_msgs.append(TextSendMessage(text = u'中の人に伝えるのでメッセージを書き込んでね．終わったら「おわり」と入力してね．'))
+        udb[_id] = {'status': 'bug_report'}
+        # reply_msgs.append(TextSendMessage(text = u'以下のリンクからお問い合わせください\n{}'.format(checkun_url)))
 
     elif cmd == 'help_group_member':
         reply_msgs.append(TextSendMessage(text = u'「確認」→「支払メンバー確認」を押してみてね。\nメンバーが揃ってない場合はグループに招待してね。'))
