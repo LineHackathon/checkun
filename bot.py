@@ -2187,12 +2187,12 @@ def handle_postback_event(event):
                         # text=cmd_prefix + u'傾斜額',
                         data=json.dumps({'cmd': 'set_additionals'})
                     ),
-                    MessageTemplateAction(
-                    # PostbackTemplateAction(
-                        label=u'傾斜設定確認',
-                        text=cmd_prefix + u'傾斜設定確認',
-                        # data=json.dumps({'cmd': 'input_amount_by_image'})
-                    ),
+                    # MessageTemplateAction(
+                    # # PostbackTemplateAction(
+                    #     label=u'傾斜設定確認',
+                    #     text=cmd_prefix + u'傾斜設定確認',
+                    #     # data=json.dumps({'cmd': 'input_amount_by_image'})
+                    # ),
                 ]
             )
         ))
