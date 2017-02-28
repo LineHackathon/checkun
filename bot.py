@@ -2495,7 +2495,7 @@ def handle_postback_event(event):
     elif cmd == 'help_byebye':
         reply_msgs.append(TextSendMessage(text = u'「設定」→「Checkunの解除」を押してね。'))
 
-    db.update_status_info(_id, udb[_id])
+    db.update_status_info(_id, udb.get(_id,{}))
 
     send_msgs(reply_msgs, reply_token = event.reply_token)
 
