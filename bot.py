@@ -519,14 +519,16 @@ def get_name(uid):
 def send_msgs(msgs, reply_token = None, uid = None, uids = None):
     if not isinstance(msgs, (list, tuple)):
         msgs = [msgs]
+
+    # 空メッセージ削除
+    if TextSendMessage('') in msgs:
+        msgs.remove(TextSendMessage(''))
+        
     # 各メッセージの不要な改行の削除
     for msg in msgs:
         if msg.type == 'text':
             while msg.text[-1] == '\n':
                 msg.text = msg.text[:-1]
-    # 空メッセージ削除
-    if TextSendMessage('') in msgs:
-        msgs.remove(TextSendMessage(''))
 
     # メッセージがあれば送信
     if len(msgs):
