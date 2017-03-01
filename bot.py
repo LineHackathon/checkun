@@ -2077,17 +2077,18 @@ def handle_postback_event(event):
                 if transfer["from"] == _id:
                     text += pay_text
                 else:
-                    # line_bot_api.push_message(transfer["from"], TextSendMessage(text = push_text))
+                    line_bot_api.push_message(transfer["from"], TextSendMessage(text = push_text))
                     pass
                 if transfer["to"] == _id:
                     text += rec_text
                 else:
+                    line_bot_api.push_message(transfer["to"], TextSendMessage(text = rec_text))
                     pass
 
-            # line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
+            line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
 
-        # reply_msgs.append(TextSendMessage(text = text))
-        reply_msgs.append(TextSendMessage(text = transfer_text))
+        reply_msgs.append(TextSendMessage(text = text))
+#         reply_msgs.append(TextSendMessage(text = transfer_text))
     elif cmd == 'check_start_no':
         reply_msgs.append(TextSendMessage(text = u'精算処理を中止しました'))
     elif cmd == 'check_report':
