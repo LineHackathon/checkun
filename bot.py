@@ -511,7 +511,9 @@ def update_profile(uid, follow=True):
     #print p.display_name
 
 def get_name(uid):
-    name = db.get_user(uid).get('name')
+    user = db.get_user(uid)
+    if user is not None:
+        name = user.get('name')
     if name is None:
         name = line_bot_api.get_profile(uid).display_name
     return name
