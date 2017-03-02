@@ -1491,26 +1491,53 @@ def handle_postback_event(event):
 
                 actions = []
                 add_next = False
-                if page == page_max:
-                    if page == 0:
-                        start = 0
-                    else:
-                        start = page * 2 + 1
-                    end = len(payments)
+                add_prev = False
+                if page == 0:
+                    start = 0
+                    #if len(payments) <= 4:
+                    if page == page_max:
+                        end = len(payments)
+                    else: # page < page_max
+                        add_next = True
+                        end = 3
                 else:
-                    add_next = True
-                    if page == 0:
-                        start = 0
-                        end = start + 3
-                    else:
+                    add_prev = True
+                    if page == page_max:
+                        start = page * 2 + 1
+                        end = len(payments)
+                    else: # page < page_max
+                        add_next = True
                         start = page * 2 + 1
                         end = start + 2
-                        actions.append(
-                            PostbackTemplateAction(
-                                label=u'前のページ',
-                                data=json.dumps({'cmd': cmd, 'page': page - 1})
-                            )
+
+                #if page == page_max:
+                #    if page == 0:
+                #        start = 0
+                #    else:
+                #        start = page * 2 + 1
+                #    end = len(payments)
+                #else:
+                #    add_next = True
+                #    if page == 0:
+                #        start = 0
+                #        end = start + 3
+                #    else:
+                #        start = page * 2 + 1
+                #        end = start + 2
+                #        actions.append(
+                #            PostbackTemplateAction(
+                #                label=u'前のページ',
+                #                data=json.dumps({'cmd': cmd, 'page': page - 1})
+                #            )
+                #        )
+
+                if add_prev:
+                    actions.append(
+                        PostbackTemplateAction(
+                            label=u'前のページ',
+                            data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
+                    )
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     actions.append(
