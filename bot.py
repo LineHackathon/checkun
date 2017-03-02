@@ -2052,9 +2052,9 @@ def handle_postback_event(event):
             payments = db.get_group_payments(gid)
             totals = {}
             for payment in payments:
-                _id = payment["payment_uid"]
+                p_id = payment["payment_uid"]
                 amount = payment["amount"]
-                totals[_id] = totals.get(_id,0) + amount
+                totals[p_id] = totals.get(p_id,0) + amount
 
             warikan_payments = []
             for payment in payments:
@@ -2081,7 +2081,7 @@ def handle_postback_event(event):
                 if transfer["from"] == _id:
                     text += pay_text
                 else:
-                    line_bot_api.push_message(transfer["from"], TextSendMessage(text = push_text))
+                    line_bot_api.push_message(transfer["from"], TextSendMessage(text = pay_text))
                     pass
                 if transfer["to"] == _id:
                     text += rec_text
