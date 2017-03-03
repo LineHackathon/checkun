@@ -438,7 +438,8 @@ def auth_callback():
         if groups[0] == state:
             msgs.append(TextSendMessage(text = u'{}さんはすでにメンバーです。'.format(name)))
         else:
-            msgs.append(TextSendMessage(text = u'{}さんは他のグループで利用しているため入れません。'.format(name)))
+            msgs.append(TextSendMessage(text = u'''{}さんは他のグループで利用しているため入れません。
+                もし精算が完了している場合は、「設定」→「Checkunの解除」で今紐付いてるグループから切り離してから再度ログインしてください。'''.format(name)))
 
     else:
         db.add_user_to_group(state, uid)
@@ -2206,7 +2207,7 @@ def handle_postback_event(event):
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
                 title=u'傾斜種類選択',
-                text = u'設定をしたい傾斜の種類を選択してください',
+                text = u'設定をしたい傾斜の種類を選択してください（初期値は100円になっています）',
                 actions=[
                     PostbackTemplateAction(
                         label=u'傾斜割合',
