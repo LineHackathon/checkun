@@ -735,66 +735,54 @@ def handle_text_message(event):
                     template=CarouselTemplate(
                         columns=[
                             CarouselColumn(
-                                # thumbnail_image_url=base_url + '/static/car.jpg',
-                                title=u'精算設定(1/3)',
-                                text=u'どれを操作するかリストから選んでね',
+                                text=u'ログイン・解除設定',
+                                actions=[
+                                    PostbackTemplateAction(
+                                        label=u'ログインボタンを出す',
+                                        data=json.dumps({'cmd': 'login_button'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'Checkunの解除(個人)',
+                                        data=json.dumps({'cmd': 'byebye_personal'})
+                                    ),
+                                    PostbackTemplateAction(
+                                        label=u'Checkunの解除(グループ)',
+                                        data=json.dumps({'cmd': 'byebye_group'})
+                                    ),
+                                ]
+                            ),
+                            CarouselColumn(
+                                text=u'精算設定(1/2)',
                                 actions=[
                                     PostbackTemplateAction(
                                         label=u'丸め設定',
-                                        # text=cmd_prefix + u'丸め設定',
                                         data=json.dumps({'cmd': 'set_round'})
                                     ),
                                     PostbackTemplateAction(
                                         label=u'傾斜設定',
-                                        # text=cmd_prefix + u'傾斜設定',
                                         data=json.dumps({'cmd': 'set_slope'})
                                     ),
                                     PostbackTemplateAction(
                                         label=u'精算設定確認',
-                                        # text=cmd_prefix + u'精算設定確認',
                                         data=json.dumps({'cmd': 'show_check_config'})
                                     ),
                                 ]
                             ),
                             CarouselColumn(
                                 # thumbnail_image_url=base_url + '/static/car.jpg',
-                                title=u'精算設定(2/3)',
-                                text=u'どれを操作するかリストから選んでね',
+                                text=u'精算設定(2/2)',
                                 actions=[
                                     PostbackTemplateAction(
                                         label=u'会計係の設定',
-                                        # text=cmd_prefix + u'会計係の設定',
                                         data=json.dumps({'cmd': 'set_accountant'})
                                     ),
                                     PostbackTemplateAction(
-                                        label=u'ヘルプ',
-                                        # text=cmd_prefix + u'初期化',
-                                        data=json.dumps({'cmd': 'help'})
-                                    ),
-                                    PostbackTemplateAction(
                                         label=u'初期化',
-                                        # text=cmd_prefix + u'初期化',
                                         data=json.dumps({'cmd': 'initialize'})
                                     ),
-                                ]
-                            ),
-                            CarouselColumn(
-                                # thumbnail_image_url=base_url + '/static/car.jpg',
-                                title=u'精算設定(3/3)',
-                                text=u'どれを操作するかリストから選んでね',
-                                actions=[
                                     PostbackTemplateAction(
                                         label=u'改善要望・バグ報告',
-                                        # text=cmd_prefix + u'改善要望・バグ報告',
                                         data=json.dumps({'cmd': 'bug_report'})
-                                    ),
-                                    PostbackTemplateAction(
-                                        label=u'Checkunの解除',
-                                        data=json.dumps({'cmd': 'byebye'})
-                                    ),
-                                    PostbackTemplateAction(
-                                        label=u'ログインボタンを出す',
-                                        data=json.dumps({'cmd': 'login_button'})
                                     ),
                                 ]
                             ),
@@ -2440,7 +2428,9 @@ def handle_postback_event(event):
     elif cmd == 'help':
         reply_msgs.append(TextSendMessage(text = u'以下のリンクを見てみてね\nhttp://checkun.accountant/#sec04'))
 
-    elif cmd == 'byebye':
+    elif cmd == 'byebye_personal':
+        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+    elif cmd == 'byebye_group':
         reply_msgs.append(TextSendMessage(text = u'グループに確認メッセージを送ったよ'))
         msg = TemplateSendMessage(
             alt_text=u'Checkun解除確認',
@@ -2460,6 +2450,21 @@ def handle_postback_event(event):
         )
         groups = db.get_user_groups(_id)
         send_msgs(msg, uid = groups[0])
+
+    elif cmd == 'byebye_yes':
+        reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
+        send_msgs(reply_msgs, _id)
+
+        if(event.source.type == 'group'):
+            line_bot_api.leave_group(event.source.group_id)
+            gid = event.source.group_id
+        elif(event.source.type == 'room'):
+            line_bot_api.leave_room(event.source.room_id)
+            gid = event.source.room_id
+        db.delete_group(gid)
+
+    elif cmd == 'byebye_no':
+        reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
 
     elif cmd == 'login_button':
         gid = db.get_user_groups(_id)[0]
@@ -2482,21 +2487,6 @@ def handle_postback_event(event):
             ]
         ))
         send_msgs(group_msgs, uid = gid)
-
-    elif cmd == 'byebye_yes':
-        reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
-        send_msgs(reply_msgs, _id)
-
-        if(event.source.type == 'group'):
-            line_bot_api.leave_group(event.source.group_id)
-            gid = event.source.group_id
-        elif(event.source.type == 'room'):
-            line_bot_api.leave_room(event.source.room_id)
-            gid = event.source.room_id
-        db.delete_group(gid)
-
-    elif cmd == 'byebye_no':
-        reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
 
     elif cmd == 'initialize':
         reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
