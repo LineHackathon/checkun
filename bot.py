@@ -789,8 +789,8 @@ def handle_text_message(event):
                                         data=json.dumps({'cmd': 'byebye'})
                                     ),
                                     PostbackTemplateAction(
-                                        label=u'　',
-                                        data=json.dumps({'cmd': ''})
+                                        label=u'ログインボタンを出す',
+                                        data=json.dumps({'cmd': 'login_button'})
                                     ),
                                 ]
                             ),
@@ -2429,6 +2429,28 @@ def handle_postback_event(event):
         )
         groups = db.get_user_groups(_id)
         send_msgs(msg, uid = groups[0])
+
+    elif cmd == 'login_button':
+        reply_msgs.append(TextSendMessage(text = u'グループにログインボタンを送ったよ'))
+
+        group_msgs=[]
+        text = u'下のログインボタンで精算グループに入ってね。'
+        group_msgs.append(TextSendMessage(text = text))
+
+        link_uri='https://access.line.me/dialog/oauth/weblogin?response_type=code&client_id={}&redirect_uri={}&state={}'.format(line_login_channel_id, urllib.quote(auth_url), gid)
+        group_msgs.append(ImagemapSendMessage(
+            base_url=base_url + '/images/LINELogin',
+            alt_text='this is an imagemap',
+            base_size=BaseSize(height=302, width=1040),
+            actions=[
+                URIImagemapAction(
+                    link_uri=link_uri,
+                    area=ImagemapArea(x=0, y=0, width=1040, height=302)
+                ),
+            ]
+        ))
+        groups = db.get_user_groups(_id)
+        send_msgs(group_msgs, uid = groups[0])
 
     elif cmd == 'byebye_yes':
         reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
