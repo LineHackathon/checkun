@@ -125,7 +125,7 @@ def line_login_get_user_profiles(token):
 def get_commad_number_str(number):
     return(u'{:,d}'.format(number))
 
-@app.route('/')
+@app.route('/all')
 def get_all():
     print('/')
     users = db.get_users()
@@ -438,7 +438,7 @@ def auth_callback():
         if groups[0] == state:
             msgs.append(TextSendMessage(text = u'{}さんはすでにメンバーです。'.format(name)))
         else:
-            msgs.append(TextSendMessage(text = u'{}さんは他のグループで利用しているため入れません。'.format(name)))
+            msgs.append(TextSendMessage(text = u'''{}さんは他のグループで利用しているため入れません。もし精算が完了している場合は、「設定」→「Checkunの解除」で今紐付いてるグループから切り離してから再度ログインしてください。'''.format(name)))
 
     else:
         db.add_user_to_group(state, uid)
@@ -511,7 +511,9 @@ def update_profile(uid, follow=True):
     #print p.display_name
 
 def get_name(uid):
-    name = db.get_user(uid).get('name')
+    user = db.get_user(uid)
+    if user is not None:
+        name = user.get('name')
     if name is None:
         name = line_bot_api.get_profile(uid).display_name
     return name
@@ -519,14 +521,16 @@ def get_name(uid):
 def send_msgs(msgs, reply_token = None, uid = None, uids = None):
     if not isinstance(msgs, (list, tuple)):
         msgs = [msgs]
+
+    # 空メッセージ削除
+    if TextSendMessage('') in msgs:
+        msgs.remove(TextSendMessage(''))
+        
     # 各メッセージの不要な改行の削除
     for msg in msgs:
         if msg.type == 'text':
             while msg.text[-1] == '\n':
                 msg.text = msg.text[:-1]
-    # 空メッセージ削除
-    if TextSendMessage('') in msgs:
-        msgs.remove(TextSendMessage(''))
 
     # メッセージがあれば送信
     if len(msgs):
@@ -1242,15 +1246,14 @@ def handle_image_message(event):
 
 
     if status == 'input_amount_by_image':
-        receipt_amount = vision.get_receipt_amount('static/' + fname)
+        amount_use, receipt_amount = vision.get_receipt_amount('static/' + fname)
+        print(amount_use)
         print(receipt_amount)
+        udb[_id]['use'] = amount_use
         udb[_id]['amount'] = int(receipt_amount)
 
     if status in ['add_photo', 'modify_photo', 'input_amount_by_image']:
-        if udb[_id].get("use") is None:
-            thum_text = text = u'{amount}円、これで登録してよいですか？'.format(amount = get_commad_number_str(udb[_id]['amount']))
-        else:
-            thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
+        thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
 
         reply_msgs.append(TemplateSendMessage(
             alt_text='登録確認',
@@ -1488,26 +1491,53 @@ def handle_postback_event(event):
 
                 actions = []
                 add_next = False
-                if page == page_max:
-                    if page == 0:
-                        start = 0
-                    else:
-                        start = page * 2 + 1
-                    end = len(payments)
+                add_prev = False
+                if page == 0:
+                    start = 0
+                    #if len(payments) <= 4:
+                    if page == page_max:
+                        end = len(payments)
+                    else: # page < page_max
+                        add_next = True
+                        end = 3
                 else:
-                    add_next = True
-                    if page == 0:
-                        start = 0
-                        end = start + 3
-                    else:
+                    add_prev = True
+                    if page == page_max:
+                        start = page * 2 + 1
+                        end = len(payments)
+                    else: # page < page_max
+                        add_next = True
                         start = page * 2 + 1
                         end = start + 2
-                        actions.append(
-                            PostbackTemplateAction(
-                                label=u'前のページ',
-                                data=json.dumps({'cmd': cmd, 'page': page - 1})
-                            )
+
+                #if page == page_max:
+                #    if page == 0:
+                #        start = 0
+                #    else:
+                #        start = page * 2 + 1
+                #    end = len(payments)
+                #else:
+                #    add_next = True
+                #    if page == 0:
+                #        start = 0
+                #        end = start + 3
+                #    else:
+                #        start = page * 2 + 1
+                #        end = start + 2
+                #        actions.append(
+                #            PostbackTemplateAction(
+                #                label=u'前のページ',
+                #                data=json.dumps({'cmd': cmd, 'page': page - 1})
+                #            )
+                #        )
+
+                if add_prev:
+                    actions.append(
+                        PostbackTemplateAction(
+                            label=u'前のページ',
+                            data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
+                    )
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     actions.append(
@@ -2049,9 +2079,9 @@ def handle_postback_event(event):
             payments = db.get_group_payments(gid)
             totals = {}
             for payment in payments:
-                _id = payment["payment_uid"]
+                p_id = payment["payment_uid"]
                 amount = payment["amount"]
-                totals[_id] = totals.get(_id,0) + amount
+                totals[p_id] = totals.get(p_id,0) + amount
 
             warikan_payments = []
             for payment in payments:
@@ -2078,17 +2108,18 @@ def handle_postback_event(event):
                 if transfer["from"] == _id:
                     text += pay_text
                 else:
-                    # line_bot_api.push_message(transfer["from"], TextSendMessage(text = push_text))
+                    line_bot_api.push_message(transfer["from"], TextSendMessage(text = pay_text))
                     pass
                 if transfer["to"] == _id:
                     text += rec_text
                 else:
+                    line_bot_api.push_message(transfer["to"], TextSendMessage(text = rec_text))
                     pass
 
-            # line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
+            line_bot_api.push_message(gid, TextSendMessage(text = transfer_text))
 
-        # reply_msgs.append(TextSendMessage(text = text))
-        reply_msgs.append(TextSendMessage(text = transfer_text))
+        reply_msgs.append(TextSendMessage(text = text))
+#         reply_msgs.append(TextSendMessage(text = transfer_text))
     elif cmd == 'check_start_no':
         reply_msgs.append(TextSendMessage(text = u'精算処理を中止しました'))
     elif cmd == 'check_report':
@@ -2175,7 +2206,7 @@ def handle_postback_event(event):
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
                 title=u'傾斜種類選択',
-                text = u'設定をしたい傾斜の種類を選択してください',
+                text = u'設定をしたい傾斜の種類を選択してください（初期値は100円になっています）',
                 actions=[
                     PostbackTemplateAction(
                         label=u'傾斜割合',
