@@ -525,7 +525,7 @@ def send_msgs(msgs, reply_token = None, uid = None, uids = None):
     # 空メッセージ削除
     if TextSendMessage('') in msgs:
         msgs.remove(TextSendMessage(''))
-        
+
     # 各メッセージの不要な改行の削除
     for msg in msgs:
         if msg.type == 'text':
@@ -2462,6 +2462,7 @@ def handle_postback_event(event):
         send_msgs(msg, uid = groups[0])
 
     elif cmd == 'login_button':
+        gid = db.get_user_groups(_id)[0]
         reply_msgs.append(TextSendMessage(text = u'グループにログインボタンを送ったよ'))
 
         group_msgs=[]
@@ -2480,8 +2481,7 @@ def handle_postback_event(event):
                 ),
             ]
         ))
-        groups = db.get_user_groups(_id)
-        send_msgs(group_msgs, uid = groups[0])
+        send_msgs(group_msgs, uid = gid)
 
     elif cmd == 'byebye_yes':
         reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
