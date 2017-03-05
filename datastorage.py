@@ -268,6 +268,20 @@ def get_group_users(gid):
 
     return users
 
+def delete_user_groups(uid):
+    all_groups = group_table.all()
+    for g in all_groups:
+        gid = g['gid']
+        users = g['users']
+        for user_id in users:
+            if user_id == uid:
+                users.remove(user_id)
+                g['users'] = users
+                group_table.update(g, Query().gid == gid)
+                break
+
+    update_db()
+
 def delete_user_from_group(gid, uid):
     group = group_table.search(Query().gid == gid)
 
@@ -383,7 +397,7 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
                             'receipt':receipt,
                             'payment_date':payment_date,
                             'modification_date':modification_date,
-                            'debt_uids': get_group_users(gid)
+                            'debt_uid': get_group_users(gid)
                         })
 
     #save receipt to user folder in S3
@@ -434,7 +448,7 @@ def get_payment(eid):
 
 #指定ユーザーの全グループでの支払い一覧を削除
 def delete_user_payments(payment_uid):
-    payment_table.remove(Query().payment_uid == payment_id)
+    payment_table.remove(Query().payment_uid == payment_uid)
 
     update_db()
 
@@ -466,6 +480,20 @@ def delete_payment(eids):
         eids = [eids]
 
     payment_table.remove(eids = eids)
+
+    update_db()
+
+def delete_payment_debts(uid):
+    all_payments = payment_table.all()
+    for p in all_payments:
+        p_uid = p['payment_uid']
+        debts = p.get('debt_uid', [])
+        for debt_id in debts:
+            if debt_id == uid:
+                debts.remove(debt_id)
+                p['debt_uid'] = debts
+                payment_table.update(p, Query().payment_uid == p_uid)
+                break
 
     update_db()
 

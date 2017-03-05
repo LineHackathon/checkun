@@ -268,6 +268,23 @@ def delete_user_from_group(uid, gid):
 
     return jsonify(group_users)
 
+@app.route('/delete/usergroups/<uid>')
+def delete_user_groups(uid):
+    db.delete_user_groups(uid)
+
+    group_users = db.get_group_users(gid)
+    print(group_users)
+
+    return jsonify(group_users)
+
+@app.route('/unfollow/user/<uid>')
+def unfollow_user(uid):
+    db.delete_user_groups(uid)
+    db.delete_user_payments(uid)
+    db.delete_payment_debts(uid)
+    #update_profile(uid, False)
+    return get_all()
+
 @app.route('/upload/<gid>/<uid>')
 def upload_receipt(gid, uid):
     aws.set_receipt(gid, uid, 'checkun.png')
@@ -2429,7 +2446,38 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'以下のリンクを見てみてね\nhttp://checkun.accountant/#sec04'))
 
     elif cmd == 'byebye_personal':
-        reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+        #reply_msgs.append(TextSendMessage(text = u'まだ準備中だからもう少し待ってね'))
+        msg = TemplateSendMessage(
+            alt_text=u'Checkun解除確認',
+            template=ButtonsTemplate(
+                text = u'Checkunを解除します。よろしいですか？',
+                actions=[
+                    PostbackTemplateAction(
+                        label=u'はい',
+                        data=json.dumps({'cmd': 'personal_byebye_yes'})
+                    ),
+                    PostbackTemplateAction(
+                        label=u'いいえ',
+                        data=json.dumps({'cmd': 'personal_byebye_no'})
+                    ),
+                ]
+            )
+        )
+        reply_msgs.append(msg)
+    elif cmd == 'personal_byebye_yes':
+        reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
+
+        groups = db.get_user_groups(_id)
+        #db.delete_user_from_group(groups[0], _id)
+        db.delete_user_groups(_id)
+        db.delete_user_payments(_id)
+        db.delete_payment_debts(_id)
+        update_profile(_id, False)
+
+        msg = TextSendMessage(text = u'{}さんは精算対象外になりました！'.format(get_name(_id)))
+        send_msgs(msg, uid = groups[0])
+    elif cmd == 'personal_byebye_no':
+        reply_msgs.append(TextSendMessage(text = u'解除をキャンセルしたよ'))
     elif cmd == 'byebye_group':
         reply_msgs.append(TextSendMessage(text = u'グループに確認メッセージを送ったよ'))
         msg = TemplateSendMessage(
