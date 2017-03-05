@@ -259,6 +259,12 @@ def add_user_to_group(uid, gid):
 
     return jsonify(group_users)
 
+@app.route('/usergroups/<uid>')
+def get_user_groups(uid, gid):
+    group_ids = db.get_user_groups(uid)
+
+    return jsonify(group_ids)
+
 @app.route('/delete/<uid>/from/<gid>')
 def delete_user_from_group(uid, gid):
     db.delete_user_from_group(gid, uid)
