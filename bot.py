@@ -1439,6 +1439,7 @@ def handle_postback_event(event):
 
     elif cmd == 'show_group_members':
         groups = db.get_user_groups(event.source.user_id)
+        print groups
         text = ''
         if len(groups) == 0:
             text = u'グループに所属していません\n'
@@ -1447,6 +1448,7 @@ def handle_postback_event(event):
                 if len(groups) > 1:
                     text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
                 users = db.get_group_users(gid)
+                print users
                 text += u'　現在この精算グループには{}人の方が対象になっています\n'.format(len(users))
                 for uid in users:
                     text += u'　{}さん\n'.format(get_name(uid))
@@ -1456,6 +1458,7 @@ def handle_postback_event(event):
     elif cmd == 'show_members_amount':
         text = u'現時点の各個人の支払い合計を報告します。\n'
         groups = db.get_user_groups(event.source.user_id)
+        print groups
         for gid in groups:
             if len(groups) > 1:
                 text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
@@ -1483,6 +1486,7 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = text))
     elif cmd == 'show_payment_list':
         groups = db.get_user_groups(_id)
+        print groups
         if len(groups) == 0:
             text = u'グループに所属していません\n'
             reply_msgs.append(TextSendMessage(text = text))
