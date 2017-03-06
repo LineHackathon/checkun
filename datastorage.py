@@ -417,21 +417,25 @@ def get_payments():
 
 #指定グループの全メンバーの支払い一覧を返す
 def get_group_payments(gid):
-    return payment_table.search((Query().gid == gid) & (Query().state != 'inactive'))
+    print(Query().state)
+    return payment_table.search((Query().gid == gid) & (Query().state == 'active'))
 
 #指定ユーザーの全グループでの支払い一覧を返す
 def get_user_payments(payment_uid):
     #state = Query().state
-    #print()
-    return payment_table.search((Query().payment_uid == payment_uid) & (Query().state != 'inactive'))
+    #if Query().state != 'inactive':
+    #    print('not inactive')
+    #if Query().state == 'active':
+    #    print('active')
+    return payment_table.search((Query().payment_uid == payment_uid) & (Query().state == 'active'))
 
 #指定グループ、ユーザーの支払い一覧を返す
 def get_group_user_payments(gid, payment_uid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().state != 'inactive'))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().state == 'active'))
 
 #一覧を返すが、基本１つ
 def get_group_user_payments_with_pid(gid, payment_uid, pid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid) & (Query().state != 'inactive'))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid) & (Query().state == 'active'))
 
 #指定グループ、ユーザーの最後(最新)支払いを返す
 #支払い訂正で使用
@@ -503,10 +507,25 @@ def delete_payment_debts(uid):
 
     update_db()
 
+def update_user_payments_state(payment_uid, state):
+    payment_table.update({'state':state}, Query().payment_uid == payment_uid)
+
+    update_db()
+
 def update_group_user_payments_state(gid, payment_uid, state):
     payment_table.update({'state':state}, (Query().gid == gid) & (Query().payment_uid == payment_uid))
 
     update_db()
+
+def update_active_user_payments_state():
+    all_groups = group_table.all()
+    for g in all_groups:
+        gid = g['gid']
+        print(gid)
+        users = g['users']
+        for user_id in users:
+            print(user_id)
+            update_group_user_payments_state(gid, user_id, 'active')
 
 #最後(最新)支払いを更新
 def update_latest_payment(gid, payment_uid, amount=None, description=None, receipt=None):
