@@ -417,21 +417,21 @@ def get_payments():
 
 #指定グループの全メンバーの支払い一覧を返す
 def get_group_payments(gid):
-    return payment_table.search((Query().gid == gid) & (Query().state == 'active'))
+    return payment_table.search((Query().gid == gid) & (Query().state != 'inactive'))
 
 #指定ユーザーの全グループでの支払い一覧を返す
 def get_user_payments(payment_uid):
     #state = Query().state
     #print()
-    return payment_table.search((Query().payment_uid == payment_uid) & (Query().state == 'active'))
+    return payment_table.search((Query().payment_uid == payment_uid) & (Query().state != 'inactive'))
 
 #指定グループ、ユーザーの支払い一覧を返す
 def get_group_user_payments(gid, payment_uid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().state == 'active'))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().state != 'inactive'))
 
 #一覧を返すが、基本１つ
 def get_group_user_payments_with_pid(gid, payment_uid, pid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid) & (Query().state == 'active'))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid) & (Query().state != 'inactive'))
 
 #指定グループ、ユーザーの最後(最新)支払いを返す
 #支払い訂正で使用
