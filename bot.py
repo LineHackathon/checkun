@@ -1480,6 +1480,7 @@ def handle_postback_event(event):
                     total += v
 
                 users = db.get_group_users(gid)
+                print users
                 text += u'{}人だと、一人あたり約{}円です'.format(len(users), get_commad_number_str(total/len(users)))
             text += '\n'
 
