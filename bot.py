@@ -2476,8 +2476,8 @@ def handle_postback_event(event):
         groups = db.get_user_groups(_id)
         #db.delete_user_from_group(groups[0], _id)
         db.delete_user_groups(_id)
-        db.delete_user_payments(_id)
-        db.delete_payment_debts(_id)
+        #db.delete_user_payments(_id)
+        #db.delete_payment_debts(_id)
         update_profile(_id, False)
 
         msg = TextSendMessage(text = u'{}さんは精算対象外になりました！'.format(get_name(_id)))
