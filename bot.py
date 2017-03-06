@@ -125,6 +125,10 @@ def line_login_get_user_profiles(token):
 def get_commad_number_str(number):
     return(u'{:,d}'.format(number))
 
+@app.route('/update/payment/state')
+def update_payment_state():
+    db.update_active_user_payments_state()
+
 @app.route('/all')
 def get_all():
     print('/')
@@ -2614,6 +2618,6 @@ def handle_beacon_event(event):
 
 
 if __name__ == "__main__":
-    db.update_active_user_payments_state()
+    #db.update_active_user_payments_state()
     # app.run(debug=True, port=5000)
     app.run(debug=True, port=5001)
