@@ -128,6 +128,7 @@ def get_commad_number_str(number):
 @app.route('/update/payment/state')
 def update_payment_state():
     db.update_active_user_payments_state()
+    return get_all()
 
 @app.route('/all')
 def get_all():
