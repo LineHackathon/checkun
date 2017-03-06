@@ -397,7 +397,8 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
                             'receipt':receipt,
                             'payment_date':payment_date,
                             'modification_date':modification_date,
-                            'debt_uid': get_group_users(gid)
+                            'debt_uid': get_group_users(gid),
+                            'state': 'active'
                         })
 
     #save receipt to user folder in S3
@@ -407,25 +408,30 @@ def add_payment(gid, payment_uid, amount, description=None, receipt=None):
 
     update_db()
 
+def get_payment_state():
+    pass
+
 #すべての支払い一覧を返す
 def get_payments():
     return payment_table.all()
 
 #指定グループの全メンバーの支払い一覧を返す
 def get_group_payments(gid):
-    return payment_table.search(Query().gid == gid)
+    return payment_table.search((Query().gid == gid) & (Query().state == 'active'))
 
 #指定ユーザーの全グループでの支払い一覧を返す
 def get_user_payments(payment_uid):
-    return payment_table.search(Query().payment_uid == payment_uid)
+    #state = Query().state
+    #print()
+    return payment_table.search((Query().payment_uid == payment_uid) & (Query().state == 'active'))
 
 #指定グループ、ユーザーの支払い一覧を返す
 def get_group_user_payments(gid, payment_uid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().state == 'active'))
 
 #一覧を返すが、基本１つ
 def get_group_user_payments_with_pid(gid, payment_uid, pid):
-    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid))
+    return payment_table.search((Query().gid == gid) & (Query().payment_uid == payment_uid) & (Query().p_id == pid) & (Query().state == 'active'))
 
 #指定グループ、ユーザーの最後(最新)支払いを返す
 #支払い訂正で使用
@@ -494,6 +500,11 @@ def delete_payment_debts(uid):
                 p['debt_uid'] = debts
                 payment_table.update(p, Query().payment_uid == p_uid)
                 break
+
+    update_db()
+
+def update_group_user_payments_state(gid, payment_uid, state):
+    payment_table.update({'state':state}, (Query().gid == gid) & (Query().payment_uid == payment_uid))
 
     update_db()
 

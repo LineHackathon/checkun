@@ -253,6 +253,7 @@ def delete_all_groups():
 @app.route('/add/<uid>/to/<gid>')
 def add_user_to_group(uid, gid):
     db.add_user_to_group(gid, uid)
+    db.update_group_user_payments_state(gid, uid, 'active')
 
     group_users = db.get_group_users(gid)
     print(group_users)
@@ -283,11 +284,13 @@ def delete_user_groups(uid):
 
     return jsonify(group_users)
 
-@app.route('/unfollow/user/<uid>')
-def unfollow_user(uid):
-    db.delete_user_groups(uid)
-    db.delete_user_payments(uid)
-    db.delete_payment_debts(uid)
+@app.route('/unfollow/group/<gid>/user/<uid>')
+def unfollow_user(gid, uid):
+    #db.delete_user_groups(uid)
+    db.delete_user_from_group(gid, uid)
+    db.update_group_user_payments_state(gid, uid, 'inactive')
+    #db.delete_user_payments(uid)
+    #db.delete_payment_debts(uid)
     #update_profile(uid, False)
     return get_all()
 
@@ -465,6 +468,7 @@ def auth_callback():
 
     else:
         db.add_user_to_group(state, uid)
+        db.update_group_user_payments_state(state, uid, 'active')
         msgs.append(TextSendMessage(text = u'{}さんが精算グループに入りました'.format(name)))
 
     line_bot_api.push_message(state, msgs)
@@ -2479,8 +2483,9 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'ありがとうございました！またいつでも呼んでね！'))
 
         groups = db.get_user_groups(_id)
-        #db.delete_user_from_group(groups[0], _id)
-        db.delete_user_groups(_id)
+        db.delete_user_from_group(groups[0], _id)
+        #db.delete_user_groups(_id)
+        db.update_group_user_payments_state(groups[0], _id, 'inactive')
         #db.delete_user_payments(_id)
         #db.delete_payment_debts(_id)
         update_profile(_id, False)
