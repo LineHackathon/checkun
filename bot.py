@@ -2399,7 +2399,7 @@ def handle_postback_event(event):
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
                 title=u'傾斜額設定',
-                text = u'{}さんの傾斜額は現在{}です\n処理を選んでください'.format(get_name(uid), rate_now),
+                text = u'{}さんの傾斜額は現在{}です\n処理を選んでください'.format(get_name(uid), get_commad_number_str(rate_now)),
                 actions=actions,
             )
         ))
@@ -2410,7 +2410,7 @@ def handle_postback_event(event):
         gid = db.get_user_groups(_id)[0]
         additionals = db.get_group_info(gid)['additionals']
         additional_new = additionals.get(uid, 0) + value
-        reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜額を{}にしました'.format(get_name(uid), additional_new)))
+        reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜額を{}にしました'.format(get_name(uid), get_commad_number_str(additional_new))))
         additionals[uid] = additional_new
         db.update_group(gid, additionals=additionals)
         send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜額を{}円にしました'.format(get_name(_id), get_name(uid), get_commad_number_str(additional_new))), uid=gid)
