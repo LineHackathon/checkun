@@ -2334,7 +2334,7 @@ def handle_postback_event(event):
             gid = groups[0]
             reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜割合をリセットしました。'))
             db.update_group(gid, rates = {})
-            send_msgs(TextSendMessage(u'{}さんが全てのユーザーの傾斜割合をリセットしました。'.format(get_name(_id)), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが全てのユーザーの傾斜割合をリセットしました。'.format(get_name(_id)), uid=gid))
 
     elif cmd == 'set_rates_user':
         uid = data['uid']
