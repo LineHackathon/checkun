@@ -1742,6 +1742,7 @@ def handle_postback_event(event):
             payment['debt_uid'] = [uid]
             db.update_payment(eid, debt_uid = payment['debt_uid'])
             reply_msgs.append(TextSendMessage(u'支払対象を{}さんに変更しました'.format(get_name(uid))))
+            send_msgs(TextSendMessage(u'{}さんが支払対象を{}さんに変更しました'.format(get_name(_id), get_name(uid))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_decrease':
@@ -1834,6 +1835,7 @@ def handle_postback_event(event):
             users.remove(uid)
             db.update_payment(eid, debt_uid = users)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象から除外しました'.format(get_name(uid))))
+            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象から除外しました'.format(get_name(_id), get_name(uid))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_increase':
@@ -1927,6 +1929,7 @@ def handle_postback_event(event):
             debt_uid.append(uid)
             db.update_payment(eid, debt_uid = debt_uid)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象に追加しました'.format(get_name(uid))))
+            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象に追加しました'.format(get_name(_id), get_name(uid))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_all':
@@ -1957,6 +1960,7 @@ def handle_postback_event(event):
             ginfo = db.get_group_info(gid)
             db.update_payment(eid, debt_uid = ginfo['users'])
             reply_msgs.append(TextSendMessage(u'支払対象を全員に変更しました'))
+            send_msgs(TextSendMessage(u'{}さんが支払対象を全員に変更しました'.format(get_name(_id))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
 
@@ -2052,6 +2056,7 @@ def handle_postback_event(event):
         eid = data['eid']
         reply_msgs.append(TextSendMessage(text = u'支払データを削除しました'))
         db.delete_payment(eid)
+        send_msgs(TextSendMessage(u'{}さんが支払データを削除しました'.format(get_name(_id))), uid=gid)
 
     elif cmd == 'delete_payment_cancel':
         reply_msgs.append(TextSendMessage(text = u'支払削除をキャンセルしました'))
@@ -2224,6 +2229,7 @@ def handle_postback_event(event):
                 groups = db.get_user_groups(_id)
                 for gid in groups:
                     db.update_group(gid, round_value = value)
+                    send_msgs(TextSendMessage(u'{}さんが丸め設定値を{}円にしました'.format(get_name(_id), get_commad_number_str(value))), uid=gid)
 
     elif cmd == 'set_slope':
         reply_msgs.append(TemplateSendMessage(
@@ -2328,6 +2334,7 @@ def handle_postback_event(event):
             gid = groups[0]
             reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜割合をリセットしました。'))
             db.update_group(gid, rates = {})
+            send_msgs(TextSendMessage(u'{}さんが全てのユーザーの傾斜割合をリセットしました。'.format(get_name(_id)), uid=gid)
 
     elif cmd == 'set_rates_user':
         uid = data['uid']
@@ -2363,6 +2370,7 @@ def handle_postback_event(event):
             rate_new = 0.0
         else:
             reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜割合を{}にしました'.format(get_name(uid), rate_new)))
+            send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜割合を{}にしました'.format(get_name(_id), get_name(uid), rate_new)), uid=gid)
         rates[uid] = rate_new
         db.update_group(gid, rates=rates)
 
@@ -2404,6 +2412,7 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜割合を{}にしました'.format(get_name(uid), additional_new)))
         additionals[uid] = additional_new
         db.update_group(gid, additionals=additionals)
+        send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜割合を{}にしました'.format(get_name(_id), get_name(uid), additional_new)), uid=gid)
 
 
     elif cmd == 'show_check_config':
