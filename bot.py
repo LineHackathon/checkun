@@ -661,9 +661,18 @@ def handle_text_message(event):
                             reply_msgs.append(make_calc_message())
                             reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜999,999円だよ'))
                         else:
-                            db.update_payment(udb[_id]['eid'], amount = amount)
-                            reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
-                            send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(udb[_id]['eid'])['gid'])
+                            eid = udb[_id]['eid']
+                            payment = db.get_payment(eid)
+                            old_amount = payment['amount']
+                            db.update_payment(eid, amount = amount)
+                            reply_msgs.append(TextSendMessage(text = u'金額を{}円に変更しました'.format(get_commad_number_str(amount))))
+                            send_msgs(TextSendMessage(u'{}さんが「{}：{}」から「{}：{}」へ金額変更しました'.format(
+                                get_name(_id),
+                                payment['description'],
+                                get_commad_number_str(old_amount),
+                                payment['description'],
+                                get_commad_number_str(amount)
+                            )), uid=payment['gid'])
 
                 elif cmd[2] == 'C':
                     new_amount = 0
@@ -701,22 +710,18 @@ def handle_text_message(event):
                         actions=[
                             PostbackTemplateAction(
                                 label=u'支払メンバー確認',
-                                # text=cmd_prefix + u'支払メンバー確認',
                                 data=json.dumps({'cmd': 'show_group_members'})
                             ),
                             PostbackTemplateAction(
                                 label=u'個別支払合計',
-                                # text=cmd_prefix + u'個別支払合計',
                                 data=json.dumps({'cmd': 'show_members_amount'})
                             ),
                             PostbackTemplateAction(
                                 label=u'支払一覧',
-                                # text=cmd_prefix + u'支払一覧',
                                 data=json.dumps({'cmd': 'show_payment_list'})
                             ),
                             PostbackTemplateAction(
                                 label=u'精算設定確認',
-                                # text=cmd_prefix + u'精算設定確認',
                                 data=json.dumps({'cmd': 'show_check_config'})
                             ),
                         ]
@@ -733,23 +738,19 @@ def handle_text_message(event):
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'精算',
                     template=ButtonsTemplate(
-                        # thumbnail_image_url=udb[_id].get('image_url', None),
                         title=u'精算',
                         text = u'何の処理をするかリストから選んでね',
                         actions=[
                             PostbackTemplateAction(
                                 label=u'精算実行・更新',
-                                # text=cmd_prefix + u'精算実行・更新',
                                 data=json.dumps({'cmd': 'check_start'})
                             ),
                             PostbackTemplateAction(
                                 label=u'精算報告',
-                                # text=cmd_prefix + u'精算報告',
                                 data=json.dumps({'cmd': 'check_report'})
                             ),
                             PostbackTemplateAction(
                                 label=u'精算結果確認',
-                                # text=cmd_prefix + u'精算結果確認',
                                 data=json.dumps({'cmd': 'check_status'})
                             ),
                         ]
@@ -788,11 +789,11 @@ def handle_text_message(event):
                                 text=u'精算設定(1/2)',
                                 actions=[
                                     PostbackTemplateAction(
-                                        label=u'丸め設定',
+                                        label=u'割り勘端数（丸め）設定',
                                         data=json.dumps({'cmd': 'set_round'})
                                     ),
                                     PostbackTemplateAction(
-                                        label=u'傾斜設定',
+                                        label=u'支払配分（傾斜）設定',
                                         data=json.dumps({'cmd': 'set_slope'})
                                     ),
                                     PostbackTemplateAction(
@@ -906,9 +907,18 @@ def handle_text_message(event):
                         udb[_id]['status'] = 'input_use'
                         reply_msgs.append(TextSendMessage(text = u'何の金額か教えてね(例.レンタカー代)※10文字まで'))
                     else:
-                        db.update_payment(udb[_id]['eid'], amount = amount)
-                        reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
-                        send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(udb[_id]['eid'])['gid'])
+                        eid = udb[_id]['eid']
+                        payment = db.get_payment(eid)
+                        old_amount = payment['amount']
+                        db.update_payment(eid, amount = amount)
+                        reply_msgs.append(TextSendMessage(text = u'金額を{}円に変更しました'.format(get_commad_number_str(amount))))
+                        send_msgs(TextSendMessage(u'{}さんが「{}：{}」から「{}：{}」へ金額変更しました'.format(
+                            get_name(_id),
+                            payment['description'],
+                            get_commad_number_str(old_amount),
+                            payment['description'],
+                            get_commad_number_str(amount)
+                        )), uid=payment['gid'])
 
 
             else:
@@ -948,9 +958,18 @@ def handle_text_message(event):
 
         elif status == 'modify_payment_description':
             description = event.message.text
-            db.update_payment(udb[_id]['eid'], description=description)
-            reply_msgs.append(TextSendMessage(u'支払項目を{}に更新しました'.format(description)))
-            send_msgs(TextSendMessage(u'{}さんが支払項目を{}に更新しました'.format(get_name(_id), description)), uid=db.get_payment(udb[_id]['eid'])['gid'])
+            eid = udb[_id]['eid']
+            payment = db.get_payment(eid)
+            old_description = payment['description']
+            db.update_payment(eid, description=description)
+            reply_msgs.append(TextSendMessage(u'支払項目を{}に変更しました'.format(description)))
+            send_msgs(TextSendMessage(u'{}さんが「{}：{}」から「{}：{}」へ項目名変更しました'.format(
+                get_name(_id),
+                old_description,
+                get_commad_number_str(payment['amount']),
+                description,
+                get_commad_number_str(payment['amount']),
+            )), uid=payment['gid'])
 
         elif status == 'ask_photo_addition':
             if event.message.text == u'OK':
@@ -1182,7 +1201,7 @@ def handle_text_message(event):
                     reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜99だよ'))
 
                 else:
-                    reply_msgs.append(TextSendMessage(text = u'『対象ユーザ』さんの傾斜割合を{rate}に設定しました'.format(rate=get_commad_number_str(rate))))
+                    reply_msgs.append(TextSendMessage(text = u'『対象ユーザ』さんの支払割合（傾斜割合）を{rate}に設定しました'.format(rate=get_commad_number_str(rate))))
 
             else:
                 reply_msgs.append(TextSendMessage(text = u'入力できるのは1〜99だよ'))
@@ -1586,9 +1605,8 @@ def handle_postback_event(event):
                 reply_msgs.append(TemplateSendMessage(
                     alt_text=u'支払一覧',
                     template=ButtonsTemplate(
-                        # thumbnail_image_url=udb[_id].get('image_url', None),
                         title=u'支払一覧',
-                        text = u'変更したい支払を選んでください',
+                        text = u'{}件の支払が登録されています。変更したい支払を選んでください'.format(len(payments)),
                         actions = actions,
                     )
                 ))
@@ -1745,7 +1763,7 @@ def handle_postback_event(event):
             payment['debt_uid'] = [uid]
             db.update_payment(eid, debt_uid = payment['debt_uid'])
             reply_msgs.append(TextSendMessage(u'支払対象を{}さんに変更しました'.format(get_name(uid))))
-            send_msgs(TextSendMessage(u'{}さんが支払対象を{}さんに変更しました'.format(get_name(_id), get_name(uid))), uid=payment['gid'])
+            send_msgs(TextSendMessage(u'{}さんが「{}：{}」の支払対象を{}さんに変更しました'.format(get_name(_id), payment['description'], get_commad_number_str(payment['amount']), get_name(uid))), uid=payment['gid'])
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_decrease':
@@ -1838,7 +1856,7 @@ def handle_postback_event(event):
             users.remove(uid)
             db.update_payment(eid, debt_uid = users)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象から除外しました'.format(get_name(uid))))
-            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象から除外しました'.format(get_name(_id), get_name(uid))), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが{}さんを「{}：{}」の支払対象から除外しました'.format(get_name(_id), get_name(uid), payment['description'], get_commad_number_str(payment['amount']))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_increase':
@@ -1932,7 +1950,7 @@ def handle_postback_event(event):
             debt_uid.append(uid)
             db.update_payment(eid, debt_uid = debt_uid)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象に追加しました'.format(get_name(uid))))
-            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象に追加しました'.format(get_name(_id), get_name(uid))), uid=payment['gid'])
+            send_msgs(TextSendMessage(u'{}さんが{}さんを「{}：{}」の支払対象に追加しました'.format(get_name(_id), get_name(uid), payment['description'], get_commad_number_str(payment['amount']))), uid=payment['gid'])
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_all':
@@ -1963,7 +1981,7 @@ def handle_postback_event(event):
             ginfo = db.get_group_info(gid)
             db.update_payment(eid, debt_uid = ginfo['users'])
             reply_msgs.append(TextSendMessage(u'支払対象を全員に変更しました'))
-            send_msgs(TextSendMessage(u'{}さんが支払対象を全員に変更しました'.format(get_name(_id))), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが「{}：{}」の支払対象を全員に変更しました'.format(get_name(_id), payment['description'], get_commad_number_str(payment['amount']))), uid=gid)
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
 
@@ -2057,8 +2075,9 @@ def handle_postback_event(event):
         ))
     elif cmd == 'delete_payment_do':
         eid = data['eid']
+        payment = db.get_payment(eid)
         reply_msgs.append(TextSendMessage(text = u'支払データを削除しました'))
-        send_msgs(TextSendMessage(u'{}さんが支払データを削除しました'.format(get_name(_id))), uid=db.get_payment(eid)['gid'])
+        send_msgs(TextSendMessage(u'{}さんが「{}：{}円」の支払データを削除しました'.format(get_name(_id), payment['description'], get_commad_number_str(payment['amount']))), uid=payment['gid'])
         db.delete_payment(eid)
 
     elif cmd == 'delete_payment_cancel':
@@ -2091,12 +2110,10 @@ def handle_postback_event(event):
                 actions=[
                     PostbackTemplateAction(
                         label=u'実行する',
-                        # text=cmd_prefix + u'精算実行・更新実行',
                         data=json.dumps({'cmd': 'check_start_yes'})
                     ),
                     PostbackTemplateAction(
                         label=u'中止する',
-                        # text=cmd_prefix + u'精算実行・更新中止',
                         data=json.dumps({'cmd': 'check_start_no'})
                     ),
                 ]
@@ -2198,11 +2215,11 @@ def handle_postback_event(event):
     elif cmd == 'set_round':
         if value is None:
             reply_msgs.append(TemplateSendMessage(
-                alt_text=u'丸め設定',
+                alt_text=u'割り勘端数（丸め）設定',
                 template=ButtonsTemplate(
                     # thumbnail_image_url=udb[_id].get('image_url', None),
-                    title=u'丸め設定',
-                    text = u'端数の丸め設定値を選択してください。',
+                    title=u'割り勘端数（丸め）設定',
+                    text = u'割り勘時の端数（丸め）設定値を選択してください。',
                     actions=[
                         PostbackTemplateAction(
                             label=u'設定しない',
@@ -2225,39 +2242,31 @@ def handle_postback_event(event):
             ))
         else:
             if value < 2:
-                reply_msgs.append(TextSendMessage(u'丸め設定値を解除しました'))
+                reply_msgs.append(TextSendMessage(u'割り勘端数（丸め）設定を解除しました'))
             else:
-                reply_msgs.append(TextSendMessage(u'丸め設定値を{}円にしました'.format(get_commad_number_str(value))))
+                reply_msgs.append(TextSendMessage(u'割り勘端数（丸め）設定値を{}円にしました'.format(get_commad_number_str(value))))
 
                 groups = db.get_user_groups(_id)
                 for gid in groups:
                     db.update_group(gid, round_value = value)
-                    send_msgs(TextSendMessage(u'{}さんが丸め設定値を{}円にしました'.format(get_name(_id), get_commad_number_str(value))), uid=gid)
+                    send_msgs(TextSendMessage(u'{}さんが割り勘端数（丸め）設定値を{}円にしました'.format(get_name(_id), get_commad_number_str(value))), uid=gid)
 
     elif cmd == 'set_slope':
         reply_msgs.append(TemplateSendMessage(
-            alt_text=u'傾斜種類選択',
+            alt_text=u'支払配分選択',
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
-                title=u'傾斜種類選択',
-                text = u'設定をしたい傾斜の種類を選択してください（初期値は100円になっています）',
+                title=u'支払配分（傾斜）種類選択',
+                text = u'設定をしたい支払配分（傾斜）の種類を選択してください',
                 actions=[
                     PostbackTemplateAction(
-                        label=u'傾斜割合',
-                        # text=cmd_prefix + u'傾斜割合',
+                        label=u'支払割合（傾斜割合）',
                         data=json.dumps({'cmd': 'set_rates'})
                     ),
                     PostbackTemplateAction(
-                        label=u'傾斜額',
-                        # text=cmd_prefix + u'傾斜額',
+                        label=u'支払金額差（傾斜額）',
                         data=json.dumps({'cmd': 'set_additionals'})
                     ),
-                    # MessageTemplateAction(
-                    # # PostbackTemplateAction(
-                    #     label=u'傾斜設定確認',
-                    #     text=cmd_prefix + u'傾斜設定確認',
-                    #     # data=json.dumps({'cmd': 'input_amount_by_image'})
-                    # ),
                 ]
             )
         ))
@@ -2320,11 +2329,11 @@ def handle_postback_event(event):
             )
 
         reply_msgs.append(TemplateSendMessage(
-            alt_text=u'傾斜対象選択',
+            alt_text=u'支払配分（傾斜）対象選択',
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
-                title=u'傾斜対象選択',
-                text = u'傾斜設定をしたいユーザーを選択してください',
+                title=u'支払配分（傾斜）対象選択',
+                text = u'支払配分（傾斜）設定をしたいユーザーを選択してください',
                 actions = actions,
             )
         ))
@@ -2335,9 +2344,9 @@ def handle_postback_event(event):
             reply_msgs.append(TextSendMessage(text = text))
         else:
             gid = groups[0]
-            reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜割合をリセットしました。'))
+            reply_msgs.append(TextSendMessage(text = u'全てのユーザーの支払割合（傾斜割合）をリセットしました。'))
             db.update_group(gid, rates = {})
-            send_msgs(TextSendMessage(u'{}さんが全てのユーザーの傾斜割合をリセットしました。'.format(get_name(_id))), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが全てのユーザーの支払割合（傾斜割合）をリセットしました。'.format(get_name(_id))), uid=gid)
 
     elif cmd == 'set_rates_user':
         uid = data['uid']
@@ -2353,11 +2362,11 @@ def handle_postback_event(event):
             ))
         # TODO: 任意のレートは未実装
         reply_msgs.append(TemplateSendMessage(
-            alt_text=u'傾斜割合設定',
+            alt_text=u'支払割合（傾斜割合）設定',
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
-                title=u'傾斜割合設定',
-                text = u'{}さんの傾斜割合は現在{}です\n処理を選んでください'.format(get_name(uid), rate_now),
+                title=u'支払割合（傾斜割合）設定',
+                text = u'{}さんの支払割合（傾斜割合）は現在{}です\n処理を選んでください'.format(get_name(uid), rate_now),
                 actions=actions,
             )
         ))
@@ -2369,20 +2378,20 @@ def handle_postback_event(event):
         rates = db.get_group_info(gid)['rates']
         rate_new = round(rates.get(uid, 1.0) + value, 1)
         if rate_new < 0.0:
-            reply_msgs.append(TextSendMessage(text = u'傾斜割合は0.0以下には設定できません'.format(get_name(uid), rate_new)))
+            reply_msgs.append(TextSendMessage(text = u'支払割合（傾斜割合）は0.0以下には設定できません'.format(get_name(uid), rate_new)))
             rate_new = 0.0
         else:
-            reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜割合を{}にしました'.format(get_name(uid), rate_new)))
-            send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜割合を{}にしました'.format(get_name(_id), get_name(uid), rate_new)), uid=gid)
+            reply_msgs.append(TextSendMessage(text = u'{}さんの支払割合（傾斜割合）を{}にしました'.format(get_name(uid), rate_new)))
+            send_msgs(TextSendMessage(u'{}さんが{}さんの支払割合（傾斜割合）を{}にしました'.format(get_name(_id), get_name(uid), rate_new)), uid=gid)
         rates[uid] = rate_new
         db.update_group(gid, rates=rates)
 
 
     elif cmd == 'set_additionals_reset':
         gid = db.get_user_groups(_id)[0]
-        reply_msgs.append(TextSendMessage(text = u'全てのユーザーの傾斜額をリセットしました'))
+        reply_msgs.append(TextSendMessage(text = u'全てのユーザーの支払金額差（傾斜額）をリセットしました'))
         db.update_group(gid, additionals = {})
-        send_msgs(TextSendMessage(u'{}さんが全てのユーザーの傾斜額をリセットしました。'.format(get_name(_id))), uid=gid)
+        send_msgs(TextSendMessage(u'{}さんが全てのユーザーの支払金額差（傾斜額）をリセットしました。'.format(get_name(_id))), uid=gid)
 
     elif cmd == 'set_additionals_user':
         uid = data['uid']
@@ -2398,11 +2407,11 @@ def handle_postback_event(event):
             ))
         # TODO: 任意のレートは未実装
         reply_msgs.append(TemplateSendMessage(
-            alt_text=u'傾斜額設定',
+            alt_text=u'支払金額差（傾斜額）設定',
             template=ButtonsTemplate(
                 # thumbnail_image_url=udb[_id].get('image_url', None),
-                title=u'傾斜額設定',
-                text = u'{}さんの傾斜額は現在{}円です\n処理を選んでください'.format(get_name(uid), get_commad_number_str(rate_now)),
+                title=u'支払金額差（傾斜額）設定',
+                text = u'{}さんの支払金額差（傾斜額）は現在{}円です\n処理を選んでください'.format(get_name(uid), get_commad_number_str(rate_now)),
                 actions=actions,
             )
         ))
@@ -2413,10 +2422,10 @@ def handle_postback_event(event):
         gid = db.get_user_groups(_id)[0]
         additionals = db.get_group_info(gid)['additionals']
         additional_new = additionals.get(uid, 0) + value
-        reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜額を{}円にしました'.format(get_name(uid), get_commad_number_str(additional_new))))
+        reply_msgs.append(TextSendMessage(text = u'{}さんの支払金額差（傾斜額）を{}円にしました'.format(get_name(uid), get_commad_number_str(additional_new))))
         additionals[uid] = additional_new
         db.update_group(gid, additionals=additionals)
-        send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜額を{}円にしました'.format(get_name(_id), get_name(uid), get_commad_number_str(additional_new))), uid=gid)
+        send_msgs(TextSendMessage(u'{}さんが{}さんの支払金額差（傾斜額）を{}円にしました'.format(get_name(_id), get_name(uid), get_commad_number_str(additional_new))), uid=gid)
 
 
     elif cmd == 'show_check_config':
@@ -2424,7 +2433,7 @@ def handle_postback_event(event):
         ginfo = db.get_group_info(gid)
         users = db.get_group_users(gid)
         text = u'精算設定は以下のようになっています\n'
-        text += u'丸め設定：{}円\n'.format(ginfo['round_value'])
+        text += u'割り勘端数（丸め）設定：{}円\n'.format(ginfo['round_value'])
         for uid in users:
             rate = ginfo['rates'].get(uid)
             additional = ginfo['additionals'].get(uid)
@@ -2609,10 +2618,10 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'「確認」→「個別支払合計」を押してみて。'))
 
     elif cmd == 'help_slope':
-        reply_msgs.append(TextSendMessage(text = u'「設定」→「傾斜設定」を押してね。'))
+        reply_msgs.append(TextSendMessage(text = u'「設定」→「支払配分（傾斜）設定」を押してね。'))
 
     elif cmd == 'help_round':
-        reply_msgs.append(TextSendMessage(text = u'「設定」→「丸め設定」を押してね。'))
+        reply_msgs.append(TextSendMessage(text = u'「設定」→「割り勘端数（丸め）設定」を押してね。'))
 
     elif cmd == 'help_change_group':
         reply_msgs.append(TextSendMessage(text = u'現在、複数のグループで同時に利用することはできません。精算を早めに済ませてCheckunを解除してから新しいグループで利用してください。\nCheckunの解除は、「設定」→「Checkunの解除」を押してね。'))
