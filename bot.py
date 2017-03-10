@@ -1742,7 +1742,7 @@ def handle_postback_event(event):
             payment['debt_uid'] = [uid]
             db.update_payment(eid, debt_uid = payment['debt_uid'])
             reply_msgs.append(TextSendMessage(u'支払対象を{}さんに変更しました'.format(get_name(uid))))
-            send_msgs(TextSendMessage(u'{}さんが支払対象を{}さんに変更しました'.format(get_name(_id), get_name(uid))), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが支払対象を{}さんに変更しました'.format(get_name(_id), get_name(uid))), uid=payment['gid'])
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_decrease':
@@ -1929,7 +1929,7 @@ def handle_postback_event(event):
             debt_uid.append(uid)
             db.update_payment(eid, debt_uid = debt_uid)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象に追加しました'.format(get_name(uid))))
-            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象に追加しました'.format(get_name(_id), get_name(uid))), uid=gid)
+            send_msgs(TextSendMessage(u'{}さんが{}さんを支払対象に追加しました'.format(get_name(_id), get_name(uid))), uid=payment['gid'])
         else:
             reply_msgs.append(TextSendMessage(u'支払対象の変更をキャンセルしました'))
     elif cmd == 'modify_payment_debt_list_set_all':
