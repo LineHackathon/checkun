@@ -2410,10 +2410,10 @@ def handle_postback_event(event):
         gid = db.get_user_groups(_id)[0]
         additionals = db.get_group_info(gid)['additionals']
         additional_new = additionals.get(uid, 0) + value
-        reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜割合を{}にしました'.format(get_name(uid), additional_new)))
+        reply_msgs.append(TextSendMessage(text = u'{}さんの傾斜額を{}にしました'.format(get_name(uid), additional_new)))
         additionals[uid] = additional_new
         db.update_group(gid, additionals=additionals)
-        send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜割合を{}にしました'.format(get_name(_id), get_name(uid), additional_new)), uid=gid)
+        send_msgs(TextSendMessage(u'{}さんが{}さんの傾斜額を{}円にしました'.format(get_name(_id), get_name(uid), get_commad_number_str(additional_new))), uid=gid)
 
 
     elif cmd == 'show_check_config':
