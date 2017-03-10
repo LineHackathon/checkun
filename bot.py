@@ -2219,7 +2219,7 @@ def handle_postback_event(event):
                 template=ButtonsTemplate(
                     # thumbnail_image_url=udb[_id].get('image_url', None),
                     title=u'割り勘端数（丸め）設定',
-                    text = u'割り勘時の端数（丸め）設定値を選択してください。',
+                    text = u'割り勘時の端数（丸め）設定値を選択してください（初期値は100円になっています）',
                     actions=[
                         PostbackTemplateAction(
                             label=u'設定しない',
