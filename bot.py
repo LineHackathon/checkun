@@ -2058,8 +2058,8 @@ def handle_postback_event(event):
     elif cmd == 'delete_payment_do':
         eid = data['eid']
         reply_msgs.append(TextSendMessage(text = u'支払データを削除しました'))
+        send_msgs(TextSendMessage(u'{}さんが支払データを削除しました'.format(get_name(_id))), uid=db.get_payment(eid)['gid'])
         db.delete_payment(eid)
-        send_msgs(TextSendMessage(u'{}さんが支払データを削除しました'.format(get_name(_id))), uid=gid)
 
     elif cmd == 'delete_payment_cancel':
         reply_msgs.append(TextSendMessage(text = u'支払削除をキャンセルしました'))
