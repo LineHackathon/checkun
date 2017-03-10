@@ -663,7 +663,7 @@ def handle_text_message(event):
                         else:
                             db.update_payment(udb[_id]['eid'], amount = amount)
                             reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
-                            send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(eid)['gid'])
+                            send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(udb[_id]['eid'])['gid'])
 
                 elif cmd[2] == 'C':
                     new_amount = 0
@@ -908,7 +908,7 @@ def handle_text_message(event):
                     else:
                         db.update_payment(udb[_id]['eid'], amount = amount)
                         reply_msgs.append(TextSendMessage(text = u'金額を{}円に更新しました'.format(get_commad_number_str(amount))))
-                        send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(eid)['gid'])
+                        send_msgs(TextSendMessage(u'{}さんが金額を{}円に更新しました'.format(get_name(_id), get_commad_number_str(amount))), uid=db.get_payment(udb[_id]['eid'])['gid'])
 
 
             else:
@@ -950,7 +950,7 @@ def handle_text_message(event):
             description = event.message.text
             db.update_payment(udb[_id]['eid'], description=description)
             reply_msgs.append(TextSendMessage(u'支払項目を{}に更新しました'.format(description)))
-            send_msgs(TextSendMessage(u'{}さんが支払項目を{}に更新しました'.format(get_name(_id), description)), uid=db.get_payment(eid)['gid'])
+            send_msgs(TextSendMessage(u'{}さんが支払項目を{}に更新しました'.format(get_name(_id), description)), uid=db.get_payment(udb[_id]['eid'])['gid'])
 
         elif status == 'ask_photo_addition':
             if event.message.text == u'OK':
