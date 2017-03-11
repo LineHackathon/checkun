@@ -546,7 +546,7 @@ def get_name(uid):
     user = db.get_user(uid)
     if user is not None:
         name = user.get('name')
-    if name is None:
+    else:
         name = line_bot_api.get_profile(uid).display_name
     return name
 
