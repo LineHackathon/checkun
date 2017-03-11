@@ -1949,6 +1949,7 @@ def handle_postback_event(event):
             debt_uid = db.get_payment(eid)['debt_uid']
             debt_uid.append(uid)
             db.update_payment(eid, debt_uid = debt_uid)
+            payment = db.get_payment(eid)
             reply_msgs.append(TextSendMessage(u'{}さんを支払対象に追加しました'.format(get_name(uid))))
             send_msgs(TextSendMessage(u'{}さんが{}さんを「{}：{}円」の支払対象に追加しました'.format(get_name(_id), get_name(uid), payment['description'], get_commad_number_str(payment['amount']))), uid=payment['gid'])
         else:
