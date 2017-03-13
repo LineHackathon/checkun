@@ -1444,6 +1444,7 @@ def handle_postback_event(event):
     _id = get_id(event.source)
     udb = {}
     udb[_id] = db.get_status_info(_id)
+    print(udb[_id])
     if event.source.type == 'user':
         update_profile(_id)
     data = json.loads(event.postback.data)
