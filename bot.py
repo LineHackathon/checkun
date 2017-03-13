@@ -2042,21 +2042,30 @@ def handle_postback_event(event):
         ))
     elif cmd == 'modify_payment_amount_by_number':
         eid = data['eid']
-        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid}
+        #udb[_id] = {'status': 'modify_payment_amount', 'eid': eid}
+        udb[_id]['status'] = 'modify_payment_amount'
+        udb[_id]['eid'] = eid
         reply_msgs.append(TextSendMessage(text = u'金額を入力してね(1~999,999)'))
     elif cmd == 'modify_payment_amount_by_calc':
         eid = data['eid']
-        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid, 'amount': 0}
+        #udb[_id] = {'status': 'modify_payment_amount', 'eid': eid, 'amount': 0}
+        udb[_id]['status'] = 'modify_payment_amount'
+        udb[_id]['eid'] = eid
+        udb[_id]['amount'] = 0
         reply_msgs.append(make_calc_message())
     elif cmd == 'modify_payment_amount_by_image':
         eid = data['eid']
-        udb[_id] = {'status': 'modify_amount_by_image', 'eid': eid}
+        #udb[_id] = {'status': 'modify_amount_by_image', 'eid': eid}
+        udb[_id]['status'] = 'modify_amount_by_image'
+        udb[_id]['eid'] = eid
         reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
         #reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
 
     elif cmd == 'modify_payment_description':
         eid = data['eid']
-        udb[_id] = {'status': 'modify_payment_description', 'eid': eid}
+        #udb[_id] = {'status': 'modify_payment_description', 'eid': eid}
+        udb[_id]['status'] = 'modify_payment_description'
+        udb[_id]['eid'] = eid
         reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください(例.レンタカー代)※10文字まで'))
     elif cmd == 'modify_payment_image':
         eid = data['eid']
@@ -2622,7 +2631,8 @@ def handle_postback_event(event):
 
     elif cmd == 'bug_report':
         reply_msgs.append(TextSendMessage(text = u'中の人に伝えるのでメッセージを書き込んでね。'))
-        udb[_id] = {'status': 'bug_report'}
+        #udb[_id] = {'status': 'bug_report'}
+        udb[_id]['status'] = 'bug_report'
         # reply_msgs.append(TextSendMessage(text = u'以下のリンクからお問い合わせください\n{}'.format(checkun_url)))
 
     elif cmd == 'help_group_member':
