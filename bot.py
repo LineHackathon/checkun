@@ -1266,7 +1266,7 @@ def handle_image_message(event):
     _id = get_id(event.source)
     udb = {}
     udb[_id] = db.get_status_info(_id)
-    #print(udb[_id])
+    print(udb[_id])
 
     if event.source.type == 'user':
         update_profile(_id)
@@ -2059,7 +2059,9 @@ def handle_postback_event(event):
         reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください(例.レンタカー代)※10文字まで'))
     elif cmd == 'modify_payment_image':
         eid = data['eid']
-        udb[_id] = {'status': 'modify_photo', 'eid': eid}
+        #udb[_id] = {'status': 'modify_photo', 'eid': eid}
+        udb[_id]['status'] = 'modify_photo'
+        udb[_id]['eid'] = eid
         reply_msgs.append(TextSendMessage(text = u'写真を撮るか、写真を選択してね'))
 
     elif cmd == 'delete_payment':
