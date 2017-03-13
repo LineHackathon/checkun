@@ -1210,7 +1210,7 @@ def handle_text_message(event):
             text = u'{}({})さんより要望・バグ報告がありました\n'.format(get_name(_id), _id)
             text += event.message.text
             send_msgs(TextSendMessage(text), uids = owner_uids)
-            udb[_id] = {}
+            #udb[_id] = {}
             reply_msgs.append(TextSendMessage(u'連絡どうもありがとう'))
 
         if(event.message.text == u'バイバイ'):
@@ -1286,13 +1286,17 @@ def handle_image_message(event):
     udb[_id]['image_url'] = image_url
     udb[_id]['image'] = fname
 
-
     if status in ['input_amount_by_image', 'modify_amount_by_image']:
         amount_use, receipt_amount = vision.get_receipt_amount('static/' + fname)
         print(amount_use)
         print(receipt_amount)
         udb[_id]['use'] = amount_use
         udb[_id]['amount'] = int(receipt_amount)
+
+    if status in ['modify_photo']:
+        payment = db.get_payment(eid)
+        udb[_id]['use'] = payment['description']
+        udb[_id]['amount'] = payment['amount']
 
     if status in ['add_photo', 'modify_photo', 'input_amount_by_image', 'modify_amount_by_image']:
         thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
@@ -1457,10 +1461,12 @@ def handle_postback_event(event):
     if False:
         pass
     elif cmd == 'input_amount_by_number':
-        udb[_id] = {'status': 'input_amount'}
+        #udb[_id] = {'status': 'input_amount'}
+        udb[_id]['status'] = 'input_amount'
         reply_msgs.append(TextSendMessage(text = u'金額を入力してね(1~999,999)'))
     elif cmd == 'input_amount_by_calc':
-        udb[_id] = {'status': 'input_amount'}
+        #udb[_id] = {'status': 'input_amount'}
+        udb[_id]['status'] = 'input_amount'
         udb[_id]['amount'] = 0
         reply_msgs.append(make_calc_message())
     elif cmd == 'input_amount_by_image':
