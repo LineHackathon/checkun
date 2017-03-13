@@ -1480,14 +1480,16 @@ def handle_postback_event(event):
                     text += u'グループ：{}\n'.format(db.get_group_info(gid).get("name"))
                 users = db.get_group_users(gid)
                 print users
-                text += u'　現在この精算グループには{}人の方が対象になっています\n'.format(len(users))
+                text += u'■支払メンバー({}人)\n'.format(len(users))
+                member_count = 1
                 for uid in users:
-                    text += u'　{}さん\n'.format(get_name(uid))
+                    text += u'{}. {}さん\n'.format(get_commad_number_str(member_count), get_name(uid))
+                    member_count += 1
                 text += '\n'
 
         reply_msgs.append(TextSendMessage(text = text))
     elif cmd == 'show_members_amount':
-        text = u'現時点の各個人の支払い合計を報告します。\n'
+        text = u'<各個人の支払合計>\n'
         groups = db.get_user_groups(event.source.user_id)
         print groups
         for gid in groups:
@@ -1507,12 +1509,12 @@ def handle_postback_event(event):
             else:
                 total = 0
                 for k, v in totals.items():
-                    text += u'{}さんが{}円支払いました\n'.format(get_name(k), get_commad_number_str(v))
+                    text += u'■{}さん\n【支払合計】{}円\n\n'.format(get_name(k), get_commad_number_str(v))
                     total += v
 
                 users = db.get_group_users(gid)
                 print users
-                text += u'{}人だと、一人あたり約{}円です'.format(len(users), get_commad_number_str(total/len(users)))
+                text += u'<割り勘金額（参考）>\n【支払対象の人数】{}人\n【一人当りの金額】約{}円\n'.format(len(users), get_commad_number_str(total/len(users)))
             text += '\n'
 
         reply_msgs.append(TextSendMessage(text = text))
@@ -2144,15 +2146,18 @@ def handle_postback_event(event):
 
             users = db.get_group_users(gid)
 
+            transfer_count = 1
             transfer_text = u''
             # transfer_list = warikan.calc_warikan2(users, totals)
             transfer_list = warikan.calc_warikan3(users, warikan_payments, ginfo['round_value'], ginfo['additionals'], ginfo['rates'])
             if len(transfer_list) == 0:
                 transfer_text += u'精算の必要はありません\n'
             for transfer in transfer_list:
-                transfer_text += u'{}さんは{}さんに{}円支払ってください\n'.format(get_name(transfer["from"]), get_name(transfer["to"]), get_commad_number_str(transfer["amount"]))
+                #transfer_text += u'{}さんは{}さんに{}円支払ってください\n'.format(get_name(transfer["from"]), get_name(transfer["to"]), get_commad_number_str(transfer["amount"]))
+                transfer_text += u'■精算{}\n【払う人】{}さん\n【貰う人】{}さん\n【金額】{}円\n\n'.format(get_commad_number_str(transfer_count), get_name(transfer["from"]), get_name(transfer["to"]), get_commad_number_str(transfer["amount"]))
                 pay_text = u'{}さんに{}円支払ってください\n'.format(get_name(transfer["to"]), get_commad_number_str(transfer["amount"]))
                 rec_text = u'{}さんから{}円受け取ってください\n'.format(get_name(transfer["from"]), get_commad_number_str(transfer["amount"]))
+                transfer_count += 1
                 # print pay_text
                 # print rec_text
                 # print transfer["from"]
@@ -2433,27 +2438,28 @@ def handle_postback_event(event):
         gid = db.get_user_groups(_id)[0]
         ginfo = db.get_group_info(gid)
         users = db.get_group_users(gid)
-        text = u'精算設定は以下のようになっています\n'
-        text += u'割り勘端数（丸め）設定：{}円\n'.format(ginfo['round_value'])
+        text = u'<割り勘端数（丸め）設定>\n'
+        text += u'【設定値】{}円\n\n'.format(ginfo['round_value'])
+        text += u'<支払配分（傾斜）設定>\n'
         for uid in users:
             rate = ginfo['rates'].get(uid)
             additional = ginfo['additionals'].get(uid)
-            text += u'{}さんに'.format(get_name(uid))
+            text += u'■{}さん\n'.format(get_name(uid))
             if rate is not None and additional is not None:
-                text += u'は{}，{}円の傾斜があります\n'.format(
+                text += u'【支払割合】{}\n【支払金額差】{}円\n\n'.format(
                     ginfo['rates'][uid],
                     get_commad_number_str(ginfo['additionals'][uid]),
                 )
             elif rate is not None:
-                text += u'は{}の傾斜があります\n'.format(
+                text += u'【支払割合】{}\n【支払金額差】なし\n\n'.format(
                     ginfo['rates'][uid],
                 )
             elif additional is not None:
-                text += u'は{}円の傾斜があります\n'.format(
+                text += u'【支払割合】なし\n【支払金額差】{}円\n\n'.format(
                     get_commad_number_str(ginfo['additionals'][uid]),
                 )
             else:
-                text += u'傾斜はありません\n'
+                text += u'【支払割合】なし\n【支払金額差】なし\n\n'
 
         reply_msgs.append(TextSendMessage(text))
 
