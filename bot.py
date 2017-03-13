@@ -1287,14 +1287,14 @@ def handle_image_message(event):
     udb[_id]['image'] = fname
 
 
-    if status == 'input_amount_by_image':
+    if status in ['input_amount_by_image', 'modify_amount_by_image']:
         amount_use, receipt_amount = vision.get_receipt_amount('static/' + fname)
         print(amount_use)
         print(receipt_amount)
         udb[_id]['use'] = amount_use
         udb[_id]['amount'] = int(receipt_amount)
 
-    if status in ['add_photo', 'modify_photo', 'input_amount_by_image']:
+    if status in ['add_photo', 'modify_photo', 'input_amount_by_image', 'modify_amount_by_image']:
         thum_text = u'{use}で{amount}円、これで登録してよいですか？'.format(use = udb[_id]['use'], amount = get_commad_number_str(udb[_id]['amount']))
 
         reply_msgs.append(TemplateSendMessage(
@@ -2009,7 +2009,8 @@ def handle_postback_event(event):
                     ),
                     PostbackTemplateAction(
                         label=u'写真',
-                        data=json.dumps({'cmd': 'modify_payment_receipt', 'eid': eid})
+                        data=json.dumps({'cmd': 'modify_payment_image', 'eid': eid})
+                        #data=json.dumps({'cmd': 'modify_payment_receipt', 'eid': eid})
                     ),
                 ]
             )
@@ -2047,16 +2048,19 @@ def handle_postback_event(event):
         udb[_id] = {'status': 'modify_payment_amount', 'eid': eid, 'amount': 0}
         reply_msgs.append(make_calc_message())
     elif cmd == 'modify_payment_amount_by_image':
-        udb[_id] = {'status': 'modify_payment_amount', 'eid': eid}
-        # reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
-        reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
+        eid = data['eid']
+        udb[_id] = {'status': 'modify_amount_by_image', 'eid': eid}
+        reply_msgs.append(TextSendMessage(text = u'レシートを撮るか、写真を選択してね'))
+        #reply_msgs.append(TextSendMessage(text = u'まだ実装していません'))
 
     elif cmd == 'modify_payment_description':
         eid = data['eid']
         udb[_id] = {'status': 'modify_payment_description', 'eid': eid}
         reply_msgs.append(TextSendMessage(text = u'支払項目を入力してください(例.レンタカー代)※10文字まで'))
-    elif cmd == 'modify_payment_receipt':
+    elif cmd == 'modify_payment_image':
         eid = data['eid']
+        udb[_id] = {'status': 'modify_photo', 'eid': eid}
+        reply_msgs.append(TextSendMessage(text = u'写真を撮るか、写真を選択してね'))
 
     elif cmd == 'delete_payment':
         eid = data['eid']
