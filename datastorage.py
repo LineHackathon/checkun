@@ -37,7 +37,8 @@ group_table = db.table('groups')
 payment_table = db.table('payments')
 debt_table = db.table('debt')
 
-status_db_name = 'db/status.json'
+#status_db_name = 'db/status.json'
+status_db_name = aws3.get_db('status')
 status_db = TinyDB(status_db_name, indent=2, sort_keys=True, separators=(',', ': '))
 status_table = status_db.table('status')
 
@@ -53,6 +54,9 @@ def update_user_pict(uid, pict):
     if aws3.is_valid() == True:
         aws3.set_user_pict(uid, pict)
 
+def update_status():
+    if aws3.is_valid() == True:
+        aws3.update_db('status')
 
 ###################
 # status table
@@ -62,6 +66,8 @@ def add_status_info(uid, status_info):
         update_status_info(uid, status_info)
     else:
         status_table.insert({'uid':uid, 'status_info':status_info})
+
+    update_status()
 
 def set_status_info(uid, status_info):
     update_status_info(uid, status_info)
@@ -97,6 +103,8 @@ def update_status_info(uid, status_info):
     else:
         status_table.insert({'uid':uid, 'status_info':status_info})
 
+    update_status()
+
 def update_status_info_element(uid, info_ele_name, info_ele_value):
     if is_user_status_exist(uid):
         user_status = status_table.search(Query().uid == uid)
@@ -105,8 +113,11 @@ def update_status_info_element(uid, info_ele_name, info_ele_value):
             status_info[info_ele_name] = info_ele_value
             status_table.update({'uid':uid, 'status_info':status_info}, Query().uid == uid)
 
+    update_status()
+
 def delete_status_info(uid):
     status_table.remove(Query().uid == uid)
+    update_status()
 
 def is_user_status_exist(uid):
     return status_table.contains(Query().uid == uid)
