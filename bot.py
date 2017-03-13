@@ -1294,6 +1294,7 @@ def handle_image_message(event):
         udb[_id]['amount'] = int(receipt_amount)
 
     if status in ['modify_photo']:
+        eid = udb[_id]['eid']
         payment = db.get_payment(eid)
         udb[_id]['use'] = payment['description']
         udb[_id]['amount'] = payment['amount']
