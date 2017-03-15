@@ -428,7 +428,8 @@ def get_payments():
 
 #指定グループの全メンバーの支払い一覧を返す
 def get_group_payments(gid):
-    print(Query().state)
+    payment_table.clear_cache()
+    #print(Query().state)
     return payment_table.search((Query().gid == gid) & (Query().state == 'active'))
 
 #指定ユーザーの全グループでの支払い一覧を返す
