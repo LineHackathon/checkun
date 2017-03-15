@@ -1619,7 +1619,7 @@ def handle_postback_event(event):
                 
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
-                    print(u'{}'.format(label))
+                    print(label.encode('utf-8'))
                     actions.append(
                         PostbackTemplateAction(
                             label=label,
