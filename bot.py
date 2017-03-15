@@ -510,7 +510,7 @@ def callback():
         print(e.status_code)
         print(e.error.message)
         print(e.error.details)
-        #abort(400)
+        abort(400)
 
     return 'OK'
 
@@ -1608,7 +1608,7 @@ def handle_postback_event(event):
                 #                data=json.dumps({'cmd': cmd, 'page': page - 1})
                 #            )
                 #        )
-
+                add_prev = False
                 if add_prev:
                     actions.append(
                         PostbackTemplateAction(
