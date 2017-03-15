@@ -1616,16 +1616,17 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
                     )
-                '''
+                
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
+                    print(label)
                     actions.append(
                         PostbackTemplateAction(
                             label=label,
                             data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
                         )
                     )
-                '''
+                
                 if add_next:
                     actions.append(
                         PostbackTemplateAction(
