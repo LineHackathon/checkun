@@ -1608,7 +1608,7 @@ def handle_postback_event(event):
                 #            )
                 #        )
                 #add_prev = False
-                '''
+                
                 if add_prev:
                     actions.append(
                         PostbackTemplateAction(
@@ -1616,7 +1616,8 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
                     )
-                for payment in payments[start:end]:
+
+                for payment in payments[start:end-1]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     actions.append(
                         PostbackTemplateAction(
@@ -1624,7 +1625,7 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
                         )
                     )
-                '''
+                
                 if add_next:
                     actions.append(
                         PostbackTemplateAction(
