@@ -1537,18 +1537,28 @@ def handle_postback_event(event):
             gid = groups[0]
             print gid
             payments = db.get_group_payments(gid)
-            print len(payments)
+            payments_count = len(payments)
+            print payments_count
             # print payments
-            if len(payments) == 0:
+            if payments_count == 0:
                 reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
             else:
                 page = data.get('page', 0)
                 print('page:'+page)
-                page_max = (len(payments) - 1) / 2 - 1
-                print('page_max1:'+page_max)
-                if page_max < 0:
-                    page_max = 0
-                print('page_max2:'+page_max)
+                #page_max = (len(payments) - 1) / 2 - 1
+                page_max = 0
+                if payments_count > 4:
+                    p_count = 3
+                    while p_count < payments_count:
+                        page_max += 1
+                        if (p_count + 3) < payments_count:
+                            p_count += 2
+                        else:
+                            p_count = payments_count
+
+                print('page_max:'+page_max)
+                #if page_max < 0:
+                #    page_max = 0
 
                 actions = []
                 add_next = False
