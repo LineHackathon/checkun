@@ -1453,6 +1453,7 @@ def handle_postback_event(event):
     if event.source.type == 'user':
         update_profile(_id)
     data = json.loads(event.postback.data)
+    print(data)
     cmd = data.get('cmd')
     value = data.get('value')
     reply_msgs = []
@@ -1542,9 +1543,12 @@ def handle_postback_event(event):
                 reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
             else:
                 page = data.get('page', 0)
+                print('page:'+page)
                 page_max = (len(payments) - 1) / 2 - 1
+                print('page_max1:'+page_max)
                 if page_max < 0:
                     page_max = 0
+                print('page_max2:'+page_max)
 
                 actions = []
                 add_next = False
@@ -1567,6 +1571,10 @@ def handle_postback_event(event):
                         start = page * 2 + 1
                         end = start + 2
 
+                print('add_prev:'+add_prev)
+                print('add_next:'+add_next)
+                print('start:'+start)
+                print('end:'+end)
                 #if page == page_max:
                 #    if page == 0:
                 #        start = 0
