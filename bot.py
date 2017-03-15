@@ -510,7 +510,7 @@ def callback():
         print(e.status_code)
         print(e.error.message)
         print(e.error.details)
-        abort(400)
+        #abort(400)
 
     return 'OK'
 
