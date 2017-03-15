@@ -1568,7 +1568,6 @@ def handle_postback_event(event):
                 add_prev = False
                 if page == 0:
                     start = 0
-                    #if len(payments) <= 4:
                     if page == page_max:
                         end = len(payments)
                     else: # page < page_max
@@ -1608,7 +1607,8 @@ def handle_postback_event(event):
                 #                data=json.dumps({'cmd': cmd, 'page': page - 1})
                 #            )
                 #        )
-                add_prev = False
+                #add_prev = False
+                '''
                 if add_prev:
                     actions.append(
                         PostbackTemplateAction(
@@ -1624,6 +1624,7 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
                         )
                     )
+                '''
                 if add_next:
                     actions.append(
                         PostbackTemplateAction(
