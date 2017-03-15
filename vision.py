@@ -86,7 +86,8 @@ def extract_amount(receipt_text):
 def analayze_use(receipt_text):
     #とりあえず日時を返す。
     #todo:
-    return 'receipt<' + datetime.now().strftime("%m%d%H%M") + '>'
+    #return 'receipt<' + datetime.now().strftime("%m%d%H%M") + '>'
+    return 'receipt' + datetime.now().strftime("%m%d%H%M")
 
 def strip_char(text, c):
 	strip_text = ''
