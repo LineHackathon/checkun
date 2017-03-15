@@ -1544,7 +1544,7 @@ def handle_postback_event(event):
                 reply_msgs.append(TextSendMessage(text = u'支払は登録されていません'))
             else:
                 page = data.get('page', 0)
-                print('page:'+page)
+                print(page)
                 #page_max = (len(payments) - 1) / 2 - 1
                 page_max = 0
                 if payments_count > 4:
@@ -1556,7 +1556,7 @@ def handle_postback_event(event):
                         else:
                             p_count = payments_count
 
-                print('page_max:'+page_max)
+                print(page_max)
                 #if page_max < 0:
                 #    page_max = 0
 
@@ -1581,10 +1581,10 @@ def handle_postback_event(event):
                         start = page * 2 + 1
                         end = start + 2
 
-                print('add_prev:'+add_prev)
-                print('add_next:'+add_next)
-                print('start:'+start)
-                print('end:'+end)
+                print(add_prev)
+                print(add_next)
+                print(start)
+                print(end)
                 #if page == page_max:
                 #    if page == 0:
                 #        start = 0
