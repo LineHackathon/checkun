@@ -15,7 +15,8 @@ from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import *
 
 # import database_mock as db
-import datastorage as db
+# import datastorage as db
+import datastorage_mongo as db
 import warikan
 import vision
 import aws3 as aws
@@ -72,12 +73,7 @@ auth_url = base_url + '/auth'
 
 cmd_prefix = u'▶'
 
-# setup database
-# db.init('checkundb.json')
-#udb = {}
-
 checkun_url = 'http://checkun.accountant/'
-# sys.exit(0)
 
 owner_uids = [
     'Uac9f94f806d1a634014857766178d4d5',
@@ -156,8 +152,6 @@ def get_users():
 @app.route('/user/<uid>')
 def get_user(uid):
     print('/user/%s' % uid)
-    #groups_of_user = db.get_groups_of_user(uid)
-    #print(groups_of_user)
     user = db.get_user(uid)
     print(user)
 
@@ -211,8 +205,6 @@ def get_groups():
 @app.route('/group/<gid>')
 def get_group(gid):
     print('/group/%s' % gid)
-    #users_in_group = db.get_users_in_group(gid)
-    #print(users_in_group)
     group_info = db.get_group_info(gid)
     print(group_info)
 
@@ -221,7 +213,6 @@ def get_group(gid):
 @app.route('/addgroup/<gid>')
 def add_group(gid):
     print('/addgroup/%s' % gid)
-    #datastorage.create_group(gid)
     db.add_group(gid, "group")
 
     groups = db.get_groups()
@@ -1608,7 +1599,7 @@ def handle_postback_event(event):
                 #            )
                 #        )
                 #add_prev = False
-                
+
                 if add_prev:
                     actions.append(
                         PostbackTemplateAction(
@@ -1616,17 +1607,18 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
                     )
-                
+
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     print(label.encode('utf-8'))
                     actions.append(
                         PostbackTemplateAction(
                             label=label,
-                            data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
+                            # data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
+                            data=json.dumps({'cmd': 'modify_payment', 'eid': payment._id})
                         )
                     )
-                
+
                 if add_next:
                     actions.append(
                         PostbackTemplateAction(
@@ -1749,7 +1741,7 @@ def handle_postback_event(event):
             actions.append(
                 PostbackTemplateAction(
                     label=u'{}さん'.format(get_name(uid)),
-                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_person_selected', 'eid': payment.eid, 'uid': uid})
+                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_person_selected', 'eid': eid, 'uid': uid})
                 )
             )
         if add_next:
@@ -1936,7 +1928,7 @@ def handle_postback_event(event):
             actions.append(
                 PostbackTemplateAction(
                     label=u'{}さん'.format(get_name(uid)),
-                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase_selected', 'eid': payment.eid, 'uid': uid})
+                    data=json.dumps({'cmd': 'modify_payment_debt_list_set_increase_selected', 'eid': eid, 'uid': uid})
                 )
             )
         if add_next:

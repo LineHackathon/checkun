@@ -5,339 +5,283 @@
 import os
 import json
 from pymongo import MongoClient
+from datetime import datetime
 
 MONGO_URL = os.environ.get('MONGOHQ_URL')
 print(MONGO_URL)
 #app.logger.info(MONGO_URL)
 
-if MONGO_URL:
-	client = MongoClient(MONGO_URL)
-    # Get the database
-	db = client['heroku_8x45fp5g']
-else:
-	client = MongoClient('mongodb://localhost:27017/')
-	db = client['test_db']
+client = MongoClient(MONGO_URL)
+# Get the database
+db = client[MONGO_URL[-15:]]
 
-col_users = db['users']
-col_groups = db['groups']
-col_hist_groups = db['hist_groups']
+col_users = db.users
+col_groups = db.groups
+col_payments = db.payments
+col_status = db.status
 
-####################################################
-# user collection(table)
-#
-# users = [
-#     {
-#         id: user_id,
-#         info: {name: xxx, flow: True, pict: null, status:}
-#         groups: [{id:group_id_1, state:flg}, {id:group_id_2, state:flg}, ...]
-#     },
-#     {
-#         info: {name: xxx, flow: True, pict: null, status:}
-#         groups: [{id:group_id_1, state:flg}, {id:group_id_2, state:flg}, ...]
-#     },
-#     ...
-# ]
-# 
-# ユーザーテーブル
-# シンプルにユーザーIDと所属するグループID一覧のみ管理する(複数のグループに所属可能)
-#
-# ・ユーザー情報はLine APIのget_profile()でその都度取得
-# ・ユーザーテーブルに直接group_idを追加/削除できない。
-#   グループテーブルにユーザーを登録/削除する時、このテーブルにgroup_idを自動追加/削除
-# ・グループの情報はgroupテーブルから取得
-# ・(T.B.D)清算中の場合、group_id:1 / 精算完了の場合、group_id:0
-#
-# 関数一覧
-# ・register_user
-#     ユーザー登録(bot追加時)。初期情報は{}
-# ・get_groups_of_user
-#     所属グループの全て、或いは、清算中のみ取得
-# ・delete_user
-####################################################
 
-#uinfo:{groups:[{}]}
-def register_user(uid, info={}):
-	if uid:
-		user = {}
-		user['id'] = uid
-		user['info'] = info
-		user['groups'] = []
-		col_users.insert_one(user)
+###################
+# status table
+###################
+def add_status_info(uid, status_info):
+    if get_status_info(uid):
+        col_status.find_one_and_update({'uid': uid}, {'status_info':status_info})
 
-def is_user_registerd(uid):
-	flag = False
-	if uid:
-		user = col_users.find_one({'id':uid})
-		if user:
-			flag = True
+    else:
+        col_status.insert_one({'uid':uid, 'status_info':status_info})
 
-	return flag
+def set_status_info(uid, status_info):
+    add_status_info(uid, status_info)
 
+def update_status_info(uid, status_info):
+    add_status_info(uid, status_info)
+
+def get_all_status():
+    return status_table.all()
+
+def get_status_info(uid):
+    status_info = {}
+    status_data = col_statu.find_one({'uid': uid})
+    if status_data:
+        status_info = status_data['status_info']
+
+    return status_info
+
+def delete_status_info(uid):
+    col_status.delete_one({'uid': uid})
+
+
+###################
+# user table
+###################
+
+def add_user(uid, name, pict, status, follow):
+    ''' ユーザ追加 '''
+    user_data = {'uid':uid, 'name':name, 'pict':pict, 'status':status, 'follow':follow}
+
+    if get_user(uid):
+        col_users.find_one_and_update({'uid': uid}, user_data)
+    else:
+        col_users.insert_one(user_data)
+
+def get_user(uid):
+    user = col_users.find_one({'uid': uid})
+    return user
 
 def get_users():
-	users = []
-	all_users = col_users.find()
-	for user in all_users:
-		users.append(user['id'])
-
-	return users
-
-def update_user_follow(uid, follow):
-	if uid:
-		user = col_users.find_one({'id':uid})
-		if user:
-			info = user['info']
-			info['follow'] = follow
-			col_users.update({'id': uid}, {'$set': {'info': info}})
-
-
-#所属グループ一覧を取得
-#all:falseの場合、active(清算中)グループのみ
-def get_groups_of_user(uid, all=False):
-	groups_of_user = []
-	if uid:
-		user = col_users.find_one({'id':uid})
-		if user:
-			groups = user['groups']
-			for group in groups:
-				if all:
-					groups_of_user.append(group['id'])
-				else:
-					if group['state']:
-						groups_of_user.append(group['id'])
-
-	return groups_of_user
-
-def add_group_to_user(gid, uid):
-	if uid:
-		user = col_users.find_one({'id': uid})
-		if user:
-			user_groups = user['groups']
-			group = {'id': gid, 'state': 1}
-			user_groups.append(group)
-			col_users.update({'id': uid}, {'$set': {'groups': user_groups}})
-
-def delete_group_from_user(gid, uid):
-	if uid:
-		user = col_users.find_one({'id': uid})
-		if gid:
-			user_groups = user['groups']
-			user_groups.append(gid)
-			col_users.update({'id': uid}, {'$set': {'groups': user_groups}})
-
+    return col_users.find(None, {_id:0})
 
 def delete_user(uid):
-	if uid:
-		col_users.delete_one({'id': uid})
+    col_users.delete_one({'uid': uid})
 
 def delete_all_users():
-	all_users = col_users.find()
-	for user in all_users:
-		delete_user(user['id'])
+    col_users.delete_many(None)
 
-####################################################
-# group collection(table)
-#
-#
-# groups = [
-#     {
-#         id: group_id,
-#         info: {name: group_name}, #必要なら、グループ情報管理用テーブルを別途追加
-#         receipts:[{file_name:receipt.jpg, id:user_id}]
-#         #支払い金額
-#         users:{user_id_1: {amount:[a1, a2, ...]}, user_id_2: {amount:[a1, a2, ...]}, ...}
-#         #精算金額(axが正数の場合は支払い、負数の場合は受け取る)
-#         adjustments:{user_id_1: {user_id_2:a1, user_id_2:a2}, user_id_2:{user_id_1:a1, user_id_3:a3}, ...}
-#     },
-#     {
-#         id: group_id,
-#         name: group_name,
-#         users:{user_id_1: {amount:[a1, a2, ...]}, user_id_2: {amount:[a1, a2, ...]}, ...}
-#         adjustments:{}
-#     },
-#     ...
-# ]
-#
-# グループテーブル
-# グループ内の各ユーザーの支払いを管理
-#
-####################################################
 
-#group作成
-#group名はLine APIから取得できない?ので、必要なら追加
-def create_group(gid, ginfo={}):
-	if gid:
-		group = {}
-		group['id'] = gid
-		group['info'] = ginfo
-		group['receipts'] = []
-		#group['users'] = []
-		group['users'] = {}
-		group['adjustments'] = {}
-		col_groups.insert_one(group)
+###################
+# group table
+###################
 
-def get_groups(all=False):
-	groups = []
-	all_groups = col_groups.find()
-	for group in all_groups:
-		groups.append(group['id'])
+def add_group(gid, gtype, name=None):
+    ''' グループ追加
+        name(Noneの場合), users, accountant, settlement_users, round は生成'''
 
-	if all:
-		all_groups = col_groups.find()
-		for group in all_groups:
-			groups.append(group['id'])
+    if get_group(gid):
+        update_group(gid, name)
+    else:
+        if name is None:
+            name = gid
 
-	return groups
+        group_data = {
+            'gid':gid,
+            'type':gtype,
+            'name':name,
+            'users':[],
+            'accountant':False,
+            'settlement_users':[],
+            'round_value':100,
+            'rates':{},
+            'additionals':{},
+        }
+        col_groups.insert_one(group_data)
 
-#group名など更新
-def update_group_info(gid, ginfo={}):
-	if gid:
-		col_groups.update({'id': gid}, {'$set': {'info': ginfo}})
+def update_group(gid, name=None, accountant=None, round_value=None, rates=None, additionals=None):
+    update_data = {}
+    if name is not None:
+        update_data['name'] = name
 
-def get_users_in_group(gid):
-	users_in_group = []
-	if gid:
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		for uid in group_users.keys():
-			users_in_group.append(uid)
-		
-		#for user in group_users:
-		#	users_in_group.append(user['id'])
-	
-	return users_in_group
+    if accountant is not None:
+        update_data['accountant'] = accountant
 
-#精算グループへ招待
-#usersテーブルのユーザーuidに所属グループgidを追加
-def invite_user_to_group(uid, gid):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		#group_users.append({'id': uid, 'amount': []})
-		group_users[uid] = {'amount': []}
-		col_groups.update({'id': gid}, {'$set': {'users': group_users}})
+    if round_value is not None:
+        update_data['round_value'] = round_value
 
-		add_group_to_user(gid, uid)
+    if rates is not None:
+        update_data['rates'] = rates
 
-#領収書追加(/static/receipt_file)
-#todo:add to aws S3
-def add_group_user_receipt(gid, uid, receipt_file):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_receipts = group['receipts']
-		group_receipt = {'file_name': receipt_file, 'id': uid}
-		group_receipts.append(group_receipt)
-		col_groups.update({'id': gid}, {'$set': {'receipts': group_receipts}})
+    if additionals is not None:
+        update_data['additionals'] = additionals
 
-#todo:get receipt image from aws S3 and save to /static
-def get_group_user_receips(gid, uid):
-	user_receipts = []
-	if gid:
-		group = col_groups.find_one({'id': gid})
-		group_receipts = group['receipts']
-		if group_receipts:
-			for receipt in group_receipts:
-				if (receipt['id'] == uid):
-					user_receipts.append(receipt['file_name'])
+    col_groups.find_one_and_update({'gid': gid}, {'$set': update_data})
 
-	return user_receipts
 
-#todo:S3
-def get_group_all_receips(gid):
-	all_receipts = []
-	if gid:
-		group = col_groups.find_one({'id': gid})
-		group_receipts = group['receipts']
-		if group_receipts:
-			for receipt in group_receipts:
-				all_receipts.append(receipt['file_name'])
+def get_groups():
+    return col_groups.find(None, {'_id': 0})
 
-	return all_receipts
+def get_group(gid):
+    return col_groups.find({'gid': gid})
 
-#グループ内のユーザーの支払い金額追加(複数支払い対応)
-def add_group_user_amount(gid, uid, amount):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		group_user = group_users[uid]
-		user_amounts = group_user['amount']
-		user_amounts.append(amount)
-		col_groups.update({'id': gid}, {'$set': {'users': group_users}})
-	
-
-#グループ内のユーザーの支払い金額一覧取得
-def get_group_user_amounts(gid, uid):
-	user_amounts = []
-	if gid:
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		group_user = group_users[uid]
-		user_amounts = group_user['amount']
-		if user_amounts:
-			for amount in user_amounts:
-				user_amounts.append(amount)
-
-	return user_amounts
-	
-
-#グループ内のユーザー数取得
-def get_group_user_count(gid):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		return group_users.count
-
-#グループ内のユーザーの支払いを更新(修正)
-def update_group_user_amount(gid, uid, index, amount):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		group_user = group_users[uid]
-		user_amounts = group_user['amount']
-		if (index < user_amounts.count):
-			user_amounts[index] = amount
-
-		col_groups.update({'id': gid}, {'$set': {'users': group_users}})
-	
-
-#グループからユーザーを削除
-#usersテーブルのユーザーuidの所属グループgidも削除
-def delete_group_user(gid, uid):
-	if gid:
-		#query = {'id': gid}
-		group = col_groups.find_one({'id': gid})
-		group_users = group['users']
-		group_users.remove(uid)
-		col_groups.update({'id': gid}, {'$set': {'users': group_users}})
-
-		delete_group_from_user(gid, uid)
-
-#グループ削除
-#usersテーブルのユーザーuid(複数)の所属グループgidも削除
 def delete_group(gid):
-	if gid:
-		col_groups.delete_one({'id': gid})
-
-		users = col_users.find()
-		for user in users:
-			delete_group_from_user(gid, user['id'])
+    ''' グループ削除 '''
+    col_groups.delete_one({'gid': gid})
 
 def delete_all_groups():
-	all_groups = col_groups.find()
-	for group in all_groups:
-		delete_group(group['id'])
+    col_groups.delete_many(None)
 
-#精算完了後別テーブルへ移動(テーブルが大きくなると、パフォーマンスに影響が出るので)
-#usersテーブルのユーザーが所属するグループの状態をfalseに変更
-def move_to_history(gid):
-	pass
+def add_user_to_group(gid, uid):
+    users = get_group_users(gid)
+    if uid not in users:
+        users.insert(uid)
+        col_groups.find_one_and_update({'gid': gid}, {'$set': {'users': users}})
 
+def get_group_users(gid):
+    return col_groups.find_one({'gid': gid})['users']
+
+def delete_user_groups(uid):
+    for group in get_grpous():
+        delete_user_from_group(group['gid'], uid)
+
+def delete_user_from_group(gid, uid):
+    users = get_group(gid)['users']
+    if uid in users:
+        users.remove(uid)
+        col_groups.find_one_and_update({'gid': gid}, {'$set': {'users': users}})
+
+def get_user_groups(uid):
+    ''' table(group)のusersにuidが含まれるグループデータをリストで渡す '''
+    user_groups = []
+
+    for group in get_groups():
+        if uid in group['users']:
+            user_groups.append(group['gid'])
+
+    return user_groups
+
+
+###################
+# payment table
+###################
+def add_payment(gid, payment_uid, amount, description=None, receipt=None):
+    ''' table(payments) に新しい支払を追加
+        id, payment_date, modification_date は生成する
+        imageの指定があれば、s3にアップ'''
+
+    payment_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    modification_date = payment_date
+    payment_data = {
+        'gid':gid,
+        'payment_uid':payment_uid,
+        'amount':amount,
+        'description':description,
+        'receipt':receipt,
+        'payment_date':payment_date,
+        'modification_date':modification_date,
+        'debt_uid': get_group_users(gid),
+        'state': 'active'
+    }
+    col_payments.insert_one(payment_data)
+
+#すべての支払い一覧を返す
+def get_payments():
+    return col_payments.find(None, {'_id': 0})
+
+#指定グループの全メンバーの支払い一覧を返す
+def get_group_payments(gid):
+    return col_payments.find({'gid': gid})
+
+#指定ユーザーの全グループでの支払い一覧を返す
+def get_user_payments(payment_uid):
+    return col_payments.find({'payment_uid': payment_uid})
+
+#指定グループ、ユーザーの支払い一覧を返す
+def get_group_user_payments(gid, payment_uid):
+    return col_payments.find({'gid': gid, 'payment_uid': payment_uid})
+
+#指定グループ、ユーザーの最後(最新)支払いを返す
+#支払い訂正で使用
+def get_group_user_latest_payment(gid, payment_uid):
+    payment = {}
+    group_user_payments = get_group_user_payments(gid, payment_uid)
+    if group_user_payments:
+        payment = group_user_payments[-1]
+
+    return payment
+
+#指定グループの全メンバーの支払い一覧を削除
+def delete_group_payments(gid):
+    col_payments.delete_many({'gid': gid})
+
+def get_payment(eid):
+    return col_payments.find_one({'_id': eid})
+
+#指定ユーザーの全グループでの支払い一覧を削除
+def delete_user_payments(payment_uid):
+    col_payments.delete_many({'payment_uid': payment_uid})
+
+#指定グループ、ユーザーの支払い一覧を削除
+def delete_group_user_payments(gid, payment_uid):
+    col_payments.delete_many({'gid': gid, 'payment_uid': payment_uid})
+
+def delete_payment(eids):
+    ''' table(payments) の id=payment_id を削除 or 不可視にする '''
+    if not isinstance(eids, (list, tuple)):
+        eids = [eids]
+
+    for eid in eids:
+        col_payments.delete_one({'_id': eid})
+
+def update_group_user_payments_state(gid, payment_uid, state):
+    col_payments.find_one_and_update({'gid': gid, 'payment_uid': payment_uid}, {'$set': {'state': state}})
+
+
+def update_payment(eid, amount=None, description=None, receipt=None, debt_uid = None):
+    ''' table(payments) の amount, description, image を上書きする
+        modification_date更新
+        imageの指定があれば、s3にアップ'''
+
+    payment = {}
+
+    if amount is not None:
+        payment['amount'] = amount
+
+    if description is not None:
+        payment['description'] = description
+
+    if receipt is not None:
+        payment['receipt'] = receipt
+
+    if debt_uid is not None:
+        payment['debt_uid'] = debt_uid
+
+    modification_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    payment['modification_date'] = modification_date
+
+    col_payments.find_one_and_update({'_id': eid}, {'$set': payment})
 
 
 if __name__ == "__main__":
-	pass
+    pass
+    # col_test = db.test
+    # col_test.insert({'uid': 'testuid'})
+    # for col_name in db.collection_names(False):
+    #     print(col_name)
+    #     for doc in db[col_name].find():
+    #         print(doc)
+    #
+    # db.drop_collection('test')
+
+    # for col_name in db.collection_names(False):
+    #     print(col_name)
+    #     for doc in db[col_name].find():
+    #         print(doc)
