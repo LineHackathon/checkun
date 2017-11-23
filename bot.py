@@ -833,7 +833,8 @@ def handle_text_message(event):
             if len(groups) == 0:
             # if True:
                 reply_msgs.append(TextSendMessage(text = u'まだどこのグループにも所属していません'))
-                image_url = 'https://s3-us-west-2.amazonaws.com/checkunreceipt/static_images/invite_checkun.jpg'
+                # image_url = 'https://s3-us-west-2.amazonaws.com/checkunreceipt/static_images/invite_checkun.jpg'
+                image_url = 'https://s3.us-east-2.amazonaws.com/checkunmain/static_images/invite_checkun.jpg'
                 reply_msgs.append(ImageSendMessage(
                     original_content_url = image_url,
                     preview_image_url = image_url,
@@ -1608,7 +1609,7 @@ def handle_postback_event(event):
                 #            )
                 #        )
                 #add_prev = False
-                
+
                 if add_prev:
                     actions.append(
                         PostbackTemplateAction(
@@ -1616,7 +1617,7 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': cmd, 'page': page - 1})
                         )
                     )
-                
+
                 for payment in payments[start:end]:
                     label = u'{}：{}円'.format(payment['description'], get_commad_number_str(payment['amount']))
                     print(label.encode('utf-8'))
@@ -1626,7 +1627,7 @@ def handle_postback_event(event):
                             data=json.dumps({'cmd': 'modify_payment', 'eid': payment.eid})
                         )
                     )
-                
+
                 if add_next:
                     actions.append(
                         PostbackTemplateAction(
